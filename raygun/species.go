@@ -1,9 +1,12 @@
 package raygun
 
-import "image/color"
+import (
+  "image/color"
+)
 
 type Species struct {
   name string
+  Points []*Point
   Color color.RGBA
 }
 
@@ -21,6 +24,7 @@ func (s *Species) MakePointGoing(dx, dy int32) (*Point, error) {
 
   pt.Color = s.Color
 
+  s.Points = append(s.Points, pt)
   return pt, err
 }
 
@@ -29,6 +33,21 @@ func (s *Species) MakePointAt(x, y, dx, dy int32) (*Point, error) {
 
   pt.Color = s.Color
 
+  s.Points = append(s.Points, pt)
   return pt, err
 }
+
+
+func (s *Species) Update() {
+  for _, point := range s.Points {
+    point.Update()
+  }
+}
+
+func (s *Species) Draw() {
+  for _, point := range s.Points {
+    point.Draw()
+  }
+}
+
 
