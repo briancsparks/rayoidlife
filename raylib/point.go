@@ -23,3 +23,8 @@ func NewPointAt(x, y, dx, dy int32) (*Point, error) {
 
   return &pt, nil
 }
+
+func (pt *Point) Update() {
+  pt.X += pt.Dx
+  pt.Y += pt.Dy
+}
