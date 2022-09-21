@@ -50,11 +50,8 @@ func MainTwo() {
   for !rl.WindowShouldClose() {
 
     // --------------------------------- Update -------------------------------------
-    adam.X += adam.Dx
-    adam.Y += adam.Dy
-
-    eve.X  += eve.Dx
-    eve.Y  += eve.Dy
+    adam.Update()
+    eve.Update()
 
 
     // --------------------------------- Draw ---------------------------------------
