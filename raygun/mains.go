@@ -38,12 +38,16 @@ func MainTwo() {
   CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
   CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
 
-  adam, _ := NewPointGoing(1, 1)
-  eve, _  := NewPointGoing(-1, -1)
-  robot, _ := NewPointGoing(1, -1)
+  blues, _ := NewSpecies("blues", rl.Blue)
+  pinks, _ := NewSpecies("pinks", rl.Pink)
+  robots, _ := NewSpecies("robots", rl.Black)
 
-  adam.Color = rl.Blue
-  eve.Color  = rl.Pink
+  adam, _ := blues.MakePointGoing(1, 1)
+  eve, _  := pinks.MakePointGoing(-1, -1)
+  robot, _ := robots.MakePointGoing(1, -1)
+
+  _,_,_ = adam,eve,robot
+
   robot.Color = rl.Black
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
@@ -55,9 +59,9 @@ func MainTwo() {
   for !rl.WindowShouldClose() {
 
     // --------------------------------- Update -------------------------------------
-    adam.Update()
-    eve.Update()
-    robot.Update()
+    blues.Update()
+    pinks.Update()
+    robots.Update()
 
 
     // --------------------------------- Draw ---------------------------------------
@@ -66,10 +70,9 @@ func MainTwo() {
 
     //rl.BeginMode2D(camera)
 
-    // Adam and Eve
-    adam.Draw()
-    eve.Draw()
-    robot.Draw()
+    blues.Draw()
+    pinks.Draw()
+    robots.Draw()
 
 
     //rl.EndMode2D()
