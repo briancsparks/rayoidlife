@@ -41,14 +41,10 @@ func MainTwo() {
   blue, _ := NewSpecies("blue", rl.Blue)
   pink, _ := NewSpecies("pink", rl.Pink)
 
-  //adam, _ := NewPointGoing(1, 1)
-  //eve, _  := NewPointGoing(-1, -1)
   adam, _ := blue.MakePointGoing(1, 1)
   eve, _  := pink.MakePointGoing(-1, -1)
   robot, _ := NewPointGoing(1, -1)
 
-  //adam.Color = rl.Blue
-  //eve.Color  = rl.Pink
   robot.Color = rl.Black
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
