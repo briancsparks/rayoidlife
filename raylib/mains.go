@@ -41,6 +41,9 @@ func MainTwo() {
   adam, _ := NewPointGoing(1, 1)
   eve, _  := NewPointGoing(-1, -1)
 
+  adam.Color = rl.Blue
+  eve.Color  = rl.Pink
+
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
@@ -61,8 +64,8 @@ func MainTwo() {
     //rl.BeginMode2D(camera)
 
     // Adam and Eve
-    rl.DrawCircle(adam.X, adam.Y, 10, rl.Blue)
-    rl.DrawCircle(eve.X,  eve.Y,  10, rl.Pink)
+    adam.Draw()
+    eve.Draw()
 
 
     //rl.EndMode2D()

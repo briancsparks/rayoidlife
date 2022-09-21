@@ -1,8 +1,15 @@
 package raylib
 
+import (
+  rl "github.com/gen2brain/raylib-go/raylib"
+  "image/color"
+)
+
 type Point struct {
   X, Y int32
   Dx, Dy int32
+
+  Color color.RGBA
 }
 
 func NewPoint() (*Point, error) {
@@ -15,10 +22,11 @@ func NewPointGoing(dx, dy int32) (*Point, error) {
 
 func NewPointAt(x, y, dx, dy int32) (*Point, error) {
   pt := Point{
-    X:  x,
-    Y:  y,
-    Dx: dx,
-    Dy: dy,
+    X:     x,
+    Y:     y,
+    Dx:    dx,
+    Dy:    dy,
+    Color: rl.White,
   }
 
   return &pt, nil
@@ -27,4 +35,8 @@ func NewPointAt(x, y, dx, dy int32) (*Point, error) {
 func (pt *Point) Update() {
   pt.X += pt.Dx
   pt.Y += pt.Dy
+}
+
+func (pt *Point) Draw() {
+  rl.DrawCircle(pt.X, pt.Y, 10, pt.Color)
 }
