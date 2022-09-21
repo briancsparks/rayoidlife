@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-  "github.com/briancsparks/raylib/raylib"
+  "github.com/briancsparks/raylib/raygun"
 
   "github.com/spf13/cobra"
 )
@@ -14,7 +14,7 @@ var oneCmd = &cobra.Command{
 
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("one called")
-    raylib.MainOne()
+    raygun.MainOne()
 	},
 }
 
