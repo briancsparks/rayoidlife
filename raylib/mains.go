@@ -22,28 +22,39 @@ func MainOne() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+var (
+  InitialScreenWidth  int32 = 1200
+  InitialScreenHeight int32 = 800
+  CurrentScreenWidth  int32
+  CurrentScreenHeight int32
+  CurrentScreenMidX   int32
+  CurrentScreenMidY   int32
+)
+
 func MainTwo() {
 
   // --------------------------------- Initialize ---------------------------------
-  var screenWidth, screenHeight int32 = 1200, 800
-  midPtX, midPtY := screenWidth/2, screenHeight/2
-  adamX, adamY, adamDx, adamDy := midPtX, midPtY, int32(1), int32(1)
-  eveX,  eveY,  eveDx,  eveDy  := midPtX, midPtY, int32(-1), int32(-1)
+  var screenWidth, screenHeight int32 = InitialScreenWidth, InitialScreenHeight
+  CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
+  CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
+
+  adam, _ := NewPointGoing(1, 1)
+  eve, _  := NewPointGoing(-1, -1)
+
+  adam.Color = rl.Blue
+  eve.Color  = rl.Pink
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
   rl.SetTargetFPS(60)
 
-  
+
   for !rl.WindowShouldClose() {
 
     // --------------------------------- Update -------------------------------------
-    adamX += adamDx
-    adamY += adamDy
-
-    eveX  += eveDx
-    eveY  += eveDy
+    adam.Update()
+    eve.Update()
 
 
     // --------------------------------- Draw ---------------------------------------
@@ -53,8 +64,8 @@ func MainTwo() {
     //rl.BeginMode2D(camera)
 
     // Adam and Eve
-    rl.DrawCircle(adamX, adamY, 10, rl.Blue)
-    rl.DrawCircle(eveX,  eveY,  10, rl.Pink)
+    adam.Draw()
+    eve.Draw()
 
 
     //rl.EndMode2D()
