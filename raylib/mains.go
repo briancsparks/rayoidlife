@@ -37,8 +37,6 @@ func MainTwo() {
   var screenWidth, screenHeight int32 = InitialScreenWidth, InitialScreenHeight
   CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
   CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
-  //adamX, adamY, adamDx, adamDy := CurrentScreenMidX, CurrentScreenMidY, int32(1), int32(1)
-  //eveX,  eveY,  eveDx,  eveDy  := CurrentScreenMidX, CurrentScreenMidY, int32(-1), int32(-1)
 
   adam, _ := NewPointGoing(1, 1)
   eve, _  := NewPointGoing(-1, -1)
