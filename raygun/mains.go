@@ -40,9 +40,11 @@ func MainTwo() {
 
   adam, _ := NewPointGoing(1, 1)
   eve, _  := NewPointGoing(-1, -1)
+  robot, _ := NewPointGoing(1, -1)
 
   adam.Color = rl.Blue
   eve.Color  = rl.Pink
+  robot.Color = rl.Black
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
 
@@ -55,6 +57,7 @@ func MainTwo() {
     // --------------------------------- Update -------------------------------------
     adam.Update()
     eve.Update()
+    robot.Update()
 
 
     // --------------------------------- Draw ---------------------------------------
@@ -66,6 +69,7 @@ func MainTwo() {
     // Adam and Eve
     adam.Draw()
     eve.Draw()
+    robot.Draw()
 
 
     //rl.EndMode2D()
