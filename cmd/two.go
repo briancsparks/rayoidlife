@@ -1,7 +1,3 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-*/
 package cmd
 
 import (
@@ -10,6 +6,8 @@ import (
 
   "github.com/spf13/cobra"
 )
+
+// -------------------------------------------------------------------------------------------------------------------
 
 // twoCmd represents the two command
 var twoCmd = &cobra.Command{
@@ -21,6 +19,8 @@ var twoCmd = &cobra.Command{
     raygun.MainTwo()
 	},
 }
+
+// -------------------------------------------------------------------------------------------------------------------
 
 func init() {
 	rootCmd.AddCommand(twoCmd)

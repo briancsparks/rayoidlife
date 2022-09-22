@@ -42,7 +42,7 @@ func MainTwo() {
   pinks, _ := NewSpecies("pinks", rl.Pink)
   robots, _ := NewSpecies("robots", rl.Black)
 
-  adam, _ := blues.MakePointGoing(1, 1)
+  adam, _ := blues.MakePointGoing(-1, 1)
   eve, _  := pinks.MakePointGoing(-1, -1)
   robot, _ := robots.MakePointGoing(1, -1)
 
