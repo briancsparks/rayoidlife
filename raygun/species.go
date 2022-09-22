@@ -1,54 +1,64 @@
 package raygun
 
 import (
-  rl "github.com/gen2brain/raylib-go/raylib"
   "image/color"
 )
 
 // -------------------------------------------------------------------------------------------------------------------
 
-type Point struct {
-  X, Y int32
-  Dx, Dy int32
-
+type Species struct {
+  name string
+  Points []*Point
   Color color.RGBA
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPoint() (*Point, error) {
-  return NewPointAt(CurrentScreenMidX, CurrentScreenMidY, 1, 1)
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func NewPointGoing(dx, dy int32) (*Point, error) {
-  return NewPointAt(CurrentScreenMidX, CurrentScreenMidY, dx, dy)
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func NewPointAt(x, y, dx, dy int32) (*Point, error) {
-  pt := Point{
-    X:     x,
-    Y:     y,
-    Dx:    dx,
-    Dy:    dy,
-    Color: rl.White,
+func NewSpecies(name string, color color.RGBA) (*Species, error) {
+  s := Species{
+    name:  name,
+    Color: color,
   }
 
-  return &pt, nil
+  return &s, nil
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (pt *Point) Update() {
-  pt.X += pt.Dx
-  pt.Y += pt.Dy
+func (s *Species) MakePointGoing(dx, dy int32) (*Point, error) {
+  pt, err := NewPointGoing(dx, dy)
+
+  pt.Color = s.Color
+
+  s.Points = append(s.Points, pt)
+  return pt, err
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (pt *Point) Draw() {
-  rl.DrawCircle(pt.X, pt.Y, 10, pt.Color)
+func (s *Species) MakePointAt(x, y, dx, dy int32) (*Point, error) {
+  pt, err := NewPointAt(x, y, dx, dy)
+
+  pt.Color = s.Color
+
+  s.Points = append(s.Points, pt)
+  return pt, err
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (s *Species) Update() {
+  for _, point := range s.Points {
+    point.Update()
+  }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (s *Species) Draw() {
+  for _, point := range s.Points {
+    point.Draw()
+  }
+}
+
+

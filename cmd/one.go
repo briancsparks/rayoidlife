@@ -7,6 +7,8 @@ import (
   "github.com/spf13/cobra"
 )
 
+// -------------------------------------------------------------------------------------------------------------------
+
 // oneCmd represents the one command
 var oneCmd = &cobra.Command{
 	Use:   "one",
@@ -17,6 +19,8 @@ var oneCmd = &cobra.Command{
     raygun.MainOne()
 	},
 }
+
+// -------------------------------------------------------------------------------------------------------------------
 
 func init() {
 	rootCmd.AddCommand(oneCmd)

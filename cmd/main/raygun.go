@@ -4,6 +4,8 @@ package main
 
 import "github.com/briancsparks/raylib/cmd"
 
+// -------------------------------------------------------------------------------------------------------------------
+
 func main() {
 	cmd.Execute()
 }

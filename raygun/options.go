@@ -8,6 +8,8 @@ type DebugOptions struct {
 
 var Debug DebugOptions
 
+// -------------------------------------------------------------------------------------------------------------------
+
 func init() {
 	Debug.VerboseLevel = 0
 }
