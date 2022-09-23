@@ -38,17 +38,29 @@ func MainTwo() {
   CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
   CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
 
-  blues, _ := NewSpecies("blues", rl.Blue)
-  pinks, _ := NewSpecies("pinks", rl.Pink)
-  robots, _ := NewSpecies("robots", rl.Black)
+  reds, _     := NewSpecies("red", rl.Red)
+  //greens, _ := NewSpecies("green", rl.Green)
+  blues, _    := NewSpecies("blue", rl.Blue)
+  //whites, _ := NewSpecies("white", rl.White)
+  robots, _   := NewSpecies("robot", rl.Black)
 
-  adam, _ := blues.MakePointGoing(-1, 1)
-  eve, _  := pinks.MakePointGoing(-1, -1)
-  robot, _ := robots.MakePointGoing(1, -1)
+  //reds.InteractWith(reds, &Rules{Attraction: 40.0, Radius: 180.0})
+  //reds.InteractWith(blues, &Rules{Attraction: -5.0, Radius: 180.0})
+
+  reds.InteractWith(reds, &Rules{Attraction: 40.0, Radius: float32(screenWidth)})
+  reds.InteractWith(blues, &Rules{Attraction: -5.0, Radius: float32(screenWidth)})
+
+  //blues.InteractWith(reds, &Rules{Attraction: -5.0, Radius: 180.0})
+  //blues.InteractWith(blues, &Rules{Attraction: 10.0, Radius: 180.0})
+
+  blues.InteractWith(reds, &Rules{Attraction: -5.0, Radius: float32(screenWidth)})
+  blues.InteractWith(blues, &Rules{Attraction: 10.0, Radius: float32(screenWidth)})
+
+  adam, _ := blues.MakePointAt(numUpToN(CurrentScreenWidth), numUpToN(CurrentScreenHeight), 0, 0)
+  eve, _  := reds.MakePointAt(numUpToN(CurrentScreenWidth), numUpToN(CurrentScreenHeight), 0, 0)
+  robot, _ := robots.MakePointAt(numUpToN(CurrentScreenWidth), numUpToN(CurrentScreenHeight), 0, 0)
 
   _,_,_ = adam,eve,robot
-
-  robot.Color = rl.Black
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
 
@@ -60,7 +72,7 @@ func MainTwo() {
 
     // --------------------------------- Update -------------------------------------
     blues.Update()
-    pinks.Update()
+    reds.Update()
     robots.Update()
 
 
@@ -71,7 +83,7 @@ func MainTwo() {
     //rl.BeginMode2D(camera)
 
     blues.Draw()
-    pinks.Draw()
+    reds.Draw()
     robots.Draw()
 
 
