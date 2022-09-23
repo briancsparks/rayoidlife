@@ -5,6 +5,9 @@ package raygun
 type Point struct {
   X, Y float32
   Dx, Dy float32
+  r float32
+
+  Mass float32
 
   Species *Species
 }
@@ -29,7 +32,8 @@ func NewPointAt(x, y, dx, dy float32) (*Point, error) {
     Y:     y,
     Dx:    dx,
     Dy:    dy,
-    //Color: rl.White,
+    r:     10,
+    Mass:  1,
   }
 
   return &pt, nil
