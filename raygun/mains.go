@@ -80,7 +80,7 @@ func MainTwo() {
 
   //reds.InteractWith(reds, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
   //reds.InteractWith(greens, Ignore)
-  reds.InteractWith(blues, NewRules(-200.0, 200.0))
+  reds.InteractWith(blues, NewRules(-300.0, 200.0))
   reds.InteractWith(whites, NewRules(100.0, float32(CurrentScreenRadius) / 12))
   //reds.InteractWith(robots, Ignore)
 
