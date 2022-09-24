@@ -13,6 +13,8 @@ type Species struct {
   Points []*Point
   Color   color.RGBA
 
+  QuasiType string
+
   Rules   map[string]*Rules
 }
 
@@ -59,63 +61,17 @@ func NewSpecies(name string, color color.RGBA) (*Species, error) {
 
 func NewQuasiSpecies(name string) (*Species, error) {
   s, err := NewSpecies(name, rl.DarkPurple)
+  s.QuasiType = name
 
   return s, err
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakePointAt(x, y float32) (*Point, error) {
-  pt, err := NewPointAt(x, y, 0.0, 0.0)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointGoing(dx, dy float32) (*Point, error) {
-  pt, err := NewPointGoing(dx, dy)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointAtGoing(x, y, dx, dy float32) (*Point, error) {
-  pt, err := NewPointAt(x, y, dx, dy)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsAt(x, y float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(x, y, 0.0, 0.0)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsGoing(dx, dy float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointGoing(dx, dy)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsAtGoing(x, y, dx, dy float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(x, y, dx, dy)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
 func (s *Species) MakePoints(n int) {
   for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight), 0.0, 0.0)
+    pos := rl.Vector2{X: randUpToN(CurrentScreenWidth), Y: randUpToN(CurrentScreenHeight)}
+    pt, _ := NewPointAtV(pos, rl.Vector2{})
     s.integrate(pt)
   }
 }
@@ -124,7 +80,8 @@ func (s *Species) MakePoints(n int) {
 
 func (s *Species) MakeBigPoints(n int, size float32) {
   for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight), 0.0, 0.0)
+    pos := rl.Vector2{X: randUpToN(CurrentScreenWidth), Y: randUpToN(CurrentScreenHeight)}
+    pt, _ := NewPointAtV(pos, rl.Vector2{})
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
     s.integrate(pt)
@@ -133,9 +90,9 @@ func (s *Species) MakeBigPoints(n int, size float32) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakeBigPointsAt(n int, size float32, x, y float32) {
+func (s *Species) MakeBigPointsAt(n int, size float32, pos rl.Vector2 /*, x, y float32*/) {
   for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(x, y, 0.0, 0.0)
+    pt, _ := NewPointAtV(pos, rl.Vector2{})
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
     s.integrate(pt)
@@ -180,12 +137,13 @@ func (s *Species) Update() {
   for _, point := range s.Points {
     //point.Update()
 
+    // TODO: Make a Vector2
     fx, fy := float32(0.0), float32(0.0)
 
     for otherColor, rules := range s.Rules {
       other := allSpecies[otherColor]
       grav := rules.Attraction * TheGlobalRules.GravPerAttr
-      rsq := rules.Radius * rules.Radius
+      rulesDistSq := rules.Radius * rules.Radius
 
       // -------------- Loop over other group
       for _, otherPt := range other.Points {
@@ -193,42 +151,37 @@ func (s *Species) Update() {
           continue
         }
 
-        dx := point.X - otherPt.X
-        dy := point.Y - otherPt.Y
-        pairSq := dx*dx + dy*dy
-        if pairSq > rsq {
-          continue
+        dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+        pairDistSq := rl.Vector2LenSqr(dist)
+        if pairDistSq > rulesDistSq {
+         continue
         }
 
-        if pairSq != 0.0 {
-          r := float32(math.Sqrt(float64(pairSq)))
-          fx += otherPt.Mass * dx / r
-          fy += otherPt.Mass * dy / r
+        if pairDistSq == 0.0 {
+         continue
         }
 
+        pairDist := float32(math.Sqrt(float64(pairDistSq)))
+        fx += otherPt.Mass * dist.X / pairDist
+        fy += otherPt.Mass * dist.Y / pairDist
       }
 
-      point.Dx += fx * grav
-      point.Dy += fy * grav
+      point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
     }
 
     // ---------- Finalize computations ----------
 
-    // TODO: clamp velocity
-    clampxy(&point.Dx, &point.Dy, TheGlobalRules.MaxVelocity)
+    clampV2(&point.vel, TheGlobalRules.MaxVelocity)
 
     // Update position
-    point.X += point.Dx
-    point.Y += point.Dy
-
-    // TODO: Keep within bounds
+    point.pos = rl.Vector2Add(point.pos, point.vel)
 
     // Bounce off edges
-    if clamped(&point.X, 0, float32(CurrentScreenWidth)) {
-      point.Dx *= -1
+    if clamped(&point.pos.X, 0, float32(CurrentScreenWidth)) {
+     point.vel.X *= -1
     }
-    if clamped(&point.Y, 0, float32(CurrentScreenHeight)) {
-      point.Dy *= -1
+    if clamped(&point.pos.Y, 0, float32(CurrentScreenHeight)) {
+     point.vel.Y *= -1
     }
 
   }
@@ -237,8 +190,7 @@ func (s *Species) Update() {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (s *Species) UpdateOne(pt *Point) {
-  pt.X += pt.Dx
-  pt.Y += pt.Dy
+  pt.pos = rl.Vector2Add(pt.pos, pt.vel)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -249,7 +201,12 @@ func (s *Species) Draw() {
   }
 }
 
+// -------------------------------------------------------------------------------------------------------------------
+
 func (s *Species) DrawOne(pt *Point) {
-  rl.DrawCircle(int32(pt.X), int32(pt.Y), pt.r, pt.Species.Color)
+  if pt.Species.QuasiType == "center" {
+   rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
+  }
+  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
 }
 

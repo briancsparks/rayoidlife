@@ -1,6 +1,7 @@
 package raygun
 
 import (
+  rl "github.com/gen2brain/raylib-go/raylib"
   "math"
   "math/rand"
   "time"
@@ -74,5 +75,11 @@ func clampxy(x, y *float32, maxLen float32) {
     *x /= vLen
     *y /= vLen
   }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func clampV2(v *rl.Vector2, maxLen float32) {
+  clampxy(&v.X, &v.Y, maxLen)
 }
 
