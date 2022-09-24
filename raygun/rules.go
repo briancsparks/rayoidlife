@@ -19,9 +19,6 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
 }
 
 var Ignore *Rules = &Rules{Attraction: 0, Radius: 0}
-//var Friendly *Rules = &Rules{Attraction: 10.0, Radius: 100.0}
-//var Unfriendly *Rules = &Rules{Attraction: -10.0, Radius: 100.0}
-//var Afraid *Rules = &Rules{Attraction: -10.0, Radius: 100.0}
 
 func NewRules(a, r float32) *Rules {
   return &Rules{

@@ -44,11 +44,13 @@ func MainTwo() {
 
   CurrentScreenRadius = maxInt(CurrentScreenWidth, CurrentScreenHeight)
 
+  // ---------- Species ----------
+
   // Quasi-species
   center, _ := NewQuasiSpecies("center")
   center.MakeBigPointsAt(1, 100, float32(CurrentScreenMidX), float32(CurrentScreenMidY))
 
-  // ---------- The Species ----------
+  // Colors Species
   reds, _     := NewSpecies("red", rl.Red)
   greens, _   := NewSpecies("green", rl.Green)
   blues, _    := NewSpecies("blue", rl.Blue)
@@ -58,14 +60,6 @@ func MainTwo() {
   _ = robots
 
   // ---------- Populations ----------
-  //adam, _ := blues.MakePointAtGoing(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight), 0, 0)
-  //eve, _  := reds.MakePointAtGoing(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight), 0, 0)
-  //robot, _ := robots.MakePointAtGoing(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight), 0, 0)
-
-  //_, _ = blues.MakePointAt(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight))
-  //_, _ = blues.MakePointAt(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight))
-  //_, _ = blues.MakePointAt(randUpToN(CurrentScreenWidth), randUpToN(CurrentScreenHeight))
-
   reds.MakePoints(100)
   greens.MakePoints(1)
   blues.MakePoints(100)
@@ -75,45 +69,18 @@ func MainTwo() {
   //_,_,_ = adam,eve,robot
 
   // ---------- Interaction Rules ----------
-  //reds.InteractWith(reds, &Rules{Attraction: 40.0, Radius: 180.0})
-  //reds.InteractWith(blues, &Rules{Attraction: -5.0, Radius: 180.0})
 
-  //reds.InteractWith(reds, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //reds.InteractWith(greens, Ignore)
   reds.InteractWith(blues, NewRules(-300.0, 200.0))
-  reds.InteractWith(whites, NewRules(100.0, float32(CurrentScreenRadius) / 12))
-  //reds.InteractWith(robots, Ignore)
-
-  //greens.InteractWith(reds, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //greens.InteractWith(greens, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //greens.InteractWith(blues, &Rules{Attraction: -5.0, Radius: float32(CurrentScreenRadius)})
-  //greens.InteractWith(whites, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //greens.InteractWith(robots, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
+  reds.InteractWith(whites, NewRules(100.0, float32(CurrentScreenRadius) / 12))   // 288
 
   blues.InteractWith(reds, UnFriendly(175.0))
-  //blues.InteractWith(greens, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //blues.InteractWith(blues, &Rules{Attraction: -5.0, Radius: float32(CurrentScreenRadius)})
   blues.InteractWith(whites, Likes(400))
-  //blues.InteractWith(robots, Ignore)
 
-  //whites.InteractWith(reds, Ignore)
-  //whites.InteractWith(greens, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
-  //whites.InteractWith(blues, Ignore)
-  //whites.InteractWith(whites, &Rules{Attraction: 40.0, Radius: float32(CurrentScreenRadius)})
   whites.InteractWith(robots, Friendly(float32(CurrentScreenRadius) / 12))
 
-  //robots.InteractWith(reds, Ignore)
-  //robots.InteractWith(greens, Ignore)
-  //robots.InteractWith(blues, Ignore)
-  //robots.InteractWith(whites, Ignore)
   robots.InteractWith(robots, Ignore)
   robots.InteractWith(center, NewRules(1.0, float32(CurrentScreenRadius)))
 
-  //blues.InteractWith(reds, &Rules{Attraction: -5.0, Radius: 180.0})
-  //blues.InteractWith(blues, &Rules{Attraction: 10.0, Radius: 180.0})
-
-  blues.InteractWith(reds, &Rules{Attraction: -5.0, Radius: float32(CurrentScreenRadius)})
-  //blues.InteractWith(blues, &Rules{Attraction: 10.0, Radius: float32(CurrentScreenRadius)})
 
   rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
 
@@ -124,26 +91,16 @@ func MainTwo() {
   for !rl.WindowShouldClose() {
 
     // --------------------------------- Update -------------------------------------
-    //blues.Update()
-    //reds.Update()
-    //robots.Update()
     UpdateAllSpecies()
-
 
     // --------------------------------- Draw ---------------------------------------
     rl.BeginDrawing()
     rl.ClearBackground(rl.SkyBlue)
-
     //rl.BeginMode2D(camera)
 
-    //blues.Draw()
-    //reds.Draw()
-    //robots.Draw()
     DrawAllSpecies()
 
-
     //rl.EndMode2D()
-
     rl.EndDrawing()
   }
 
