@@ -68,54 +68,6 @@ func NewQuasiSpecies(name string) (*Species, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakePointAt(x, y float32) (*Point, error) {
-  pt, err := NewPointAt(x, y, 0.0, 0.0)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointGoing(dx, dy float32) (*Point, error) {
-  pt, err := NewPointGoing(dx, dy)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointAtGoing(x, y, dx, dy float32) (*Point, error) {
-  pt, err := NewPointAt(x, y, dx, dy)
-  return s.integrate(pt), err
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsAt(x, y float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(x, y, 0.0, 0.0)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsGoing(dx, dy float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointGoing(dx, dy)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) MakePointsAtGoing(x, y, dx, dy float32, n int) {
-  for i := 0; i < n; i++ {
-    pt, _ := NewPointAt(x, y, dx, dy)
-    s.integrate(pt)
-  }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
 func (s *Species) MakePoints(n int) {
   for i := 0; i < n; i++ {
     pos := rl.Vector2{X: randUpToN(CurrentScreenWidth), Y: randUpToN(CurrentScreenHeight)}
@@ -185,6 +137,7 @@ func (s *Species) Update() {
   for _, point := range s.Points {
     //point.Update()
 
+    // TODO: Make a Vector2
     fx, fy := float32(0.0), float32(0.0)
 
     for otherColor, rules := range s.Rules {
@@ -199,18 +152,18 @@ func (s *Species) Update() {
         }
 
         dist := rl.Vector2Subtract(point.pos, otherPt.pos)
-        pairDistSq2 := rl.Vector2LenSqr(dist)
-        if pairDistSq2 > rulesDistSq {
+        pairDistSq := rl.Vector2LenSqr(dist)
+        if pairDistSq > rulesDistSq {
          continue
         }
 
-        if pairDistSq2 == 0.0 {
+        if pairDistSq == 0.0 {
          continue
         }
 
-        pairDist2 := float32(math.Sqrt(float64(pairDistSq2)))
-        fx += otherPt.Mass * dist.X / pairDist2
-        fy += otherPt.Mass * dist.Y / pairDist2
+        pairDist := float32(math.Sqrt(float64(pairDistSq)))
+        fx += otherPt.Mass * dist.X / pairDist
+        fy += otherPt.Mass * dist.Y / pairDist
       }
 
       point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
