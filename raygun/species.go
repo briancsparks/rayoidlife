@@ -196,42 +196,37 @@ func (s *Species) Update() {
           continue
         }
 
-        dx := point.X - otherPt.X
-        dy := point.Y - otherPt.Y
-        pairDistSq := dx*dx + dy*dy
-        if pairDistSq > rulesDistSq {
-          continue
+        dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+        pairDistSq2 := rl.Vector2LenSqr(dist)
+        if pairDistSq2 > rulesDistSq {
+         continue
         }
 
-        if pairDistSq != 0.0 {
-          pairDist := float32(math.Sqrt(float64(pairDistSq)))
-          fx += otherPt.Mass * dx / pairDist
-          fy += otherPt.Mass * dy / pairDist
+        if pairDistSq2 == 0.0 {
+         continue
         }
 
+        pairDist2 := float32(math.Sqrt(float64(pairDistSq2)))
+        fx += otherPt.Mass * dist.X / pairDist2
+        fy += otherPt.Mass * dist.Y / pairDist2
       }
 
-      point.Dx += fx * grav
-      point.Dy += fy * grav
+      point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
     }
 
     // ---------- Finalize computations ----------
 
-    // TODO: clamp velocity
-    clampxy(&point.Dx, &point.Dy, TheGlobalRules.MaxVelocity)
+    clampV2(&point.vel, TheGlobalRules.MaxVelocity)
 
     // Update position
-    point.X += point.Dx
-    point.Y += point.Dy
-
-    // TODO: Keep within bounds
+    point.pos = rl.Vector2Add(point.pos, point.vel)
 
     // Bounce off edges
-    if clamped(&point.X, 0, float32(CurrentScreenWidth)) {
-      point.Dx *= -1
+    if clamped(&point.pos.X, 0, float32(CurrentScreenWidth)) {
+     point.vel.X *= -1
     }
-    if clamped(&point.Y, 0, float32(CurrentScreenHeight)) {
-      point.Dy *= -1
+    if clamped(&point.pos.Y, 0, float32(CurrentScreenHeight)) {
+     point.vel.Y *= -1
     }
 
   }
@@ -240,8 +235,7 @@ func (s *Species) Update() {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (s *Species) UpdateOne(pt *Point) {
-  pt.X += pt.Dx
-  pt.Y += pt.Dy
+  pt.pos = rl.Vector2Add(pt.pos, pt.vel)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -252,10 +246,12 @@ func (s *Species) Draw() {
   }
 }
 
+// -------------------------------------------------------------------------------------------------------------------
+
 func (s *Species) DrawOne(pt *Point) {
   if pt.Species.QuasiType == "center" {
-    rl.DrawCircle(int32(pt.X), int32(pt.Y), pt.r + 3, rl.Black)
+   rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
   }
-  rl.DrawCircle(int32(pt.X), int32(pt.Y), pt.r, pt.Species.Color)
+  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
 }
 

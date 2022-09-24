@@ -1,13 +1,13 @@
 package raygun
 
+import rl "github.com/gen2brain/raylib-go/raylib"
+
 // -------------------------------------------------------------------------------------------------------------------
 
 type Point struct {
-  X, Y float32
-  Dx, Dy float32
-  r float32
-
-  Mass float32
+  pos, vel    rl.Vector2
+  r           float32
+  Mass        float32
 
   Species *Species
 }
@@ -20,20 +20,19 @@ func NewPoint() (*Point, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPointGoing(dx, dy float32) (*Point, error) {
-  return NewPointAt(float32(CurrentScreenMidX), float32(CurrentScreenMidY), dx, dy)
+func NewPointGoing(xvel, yvel float32) (*Point, error) {
+  return NewPointAt(float32(CurrentScreenMidX), float32(CurrentScreenMidY), xvel, yvel)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPointAt(x, y, dx, dy float32) (*Point, error) {
+func NewPointAt(x, y, xvel, yvel float32) (*Point, error) {
   pt := Point{
-    X:     x,
-    Y:     y,
-    Dx:    dx,
-    Dy:    dy,
-    r:     10,
-    Mass:  1,
+    pos:  rl.Vector2{X: x, Y: y},
+    vel:  rl.Vector2{X: xvel, Y: yvel},
+
+    r:    10,
+    Mass: 1,
   }
 
   return &pt, nil
@@ -42,8 +41,8 @@ func NewPointAt(x, y, dx, dy float32) (*Point, error) {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Update() {
-  //pt.X += pt.Dx
-  //pt.Y += pt.Dy
+  //pt.X += pt.xvel
+  //pt.Y += pt.yvel
   pt.Species.UpdateOne(pt)
 }
 
