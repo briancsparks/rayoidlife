@@ -1,40 +1,25 @@
 package raygun
 
-import (
-  rl "github.com/gen2brain/raylib-go/raylib"
-  "image/color"
-)
+import rl "github.com/gen2brain/raylib-go/raylib"
 
 // -------------------------------------------------------------------------------------------------------------------
 
 type Point struct {
-  X, Y int32
-  Dx, Dy int32
+  pos, vel    rl.Vector2
+  r           float32
+  Mass        float32
 
-  Color color.RGBA
+  Species *Species
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPoint() (*Point, error) {
-  return NewPointAt(CurrentScreenMidX, CurrentScreenMidY, 1, 1)
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func NewPointGoing(dx, dy int32) (*Point, error) {
-  return NewPointAt(CurrentScreenMidX, CurrentScreenMidY, dx, dy)
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func NewPointAt(x, y, dx, dy int32) (*Point, error) {
+func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
   pt := Point{
-    X:     x,
-    Y:     y,
-    Dx:    dx,
-    Dy:    dy,
-    Color: rl.White,
+    pos:  pos,
+    vel:  vel,
+    r:    10,
+    Mass: 1,
   }
 
   return &pt, nil
@@ -43,12 +28,11 @@ func NewPointAt(x, y, dx, dy int32) (*Point, error) {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Update() {
-  pt.X += pt.Dx
-  pt.Y += pt.Dy
+  pt.Species.UpdateOne(pt)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Draw() {
-  rl.DrawCircle(pt.X, pt.Y, 10, pt.Color)
+  pt.Species.DrawOne(pt)
 }
