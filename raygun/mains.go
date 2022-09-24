@@ -33,6 +33,8 @@ var (
   CurrentScreenRadius int32
   CurrentScreenMidX   int32
   CurrentScreenMidY   int32
+
+  CurrentScreenCenter rl.Vector2
 )
 
 func MainTwo() {
@@ -41,6 +43,7 @@ func MainTwo() {
   var screenWidth, screenHeight int32 = InitialScreenWidth, InitialScreenHeight
   CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
   CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
+  CurrentScreenCenter = rl.Vector2{X: float32(CurrentScreenMidX), Y: float32(CurrentScreenMidY)}
 
   CurrentScreenRadius = maxInt(CurrentScreenWidth, CurrentScreenHeight)
 
@@ -48,7 +51,7 @@ func MainTwo() {
 
   // Quasi-species
   center, _ := NewQuasiSpecies("center")
-  center.MakeBigPointsAt(1, 100, float32(CurrentScreenMidX), float32(CurrentScreenMidY))
+  center.MakeBigPointsAt(1, 100, CurrentScreenCenter)
 
   // Colors Species
   reds, _     := NewSpecies("red", rl.Red)

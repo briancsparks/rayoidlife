@@ -40,6 +40,19 @@ func NewPointAt(x, y, xvel, yvel float32) (*Point, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
+  pt := Point{
+    pos:  pos,
+    vel:  vel,
+    r:    10,
+    Mass: 1,
+  }
+
+  return &pt, nil
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 func (pt *Point) Update() {
   //pt.X += pt.xvel
   //pt.Y += pt.yvel
