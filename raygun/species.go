@@ -13,6 +13,8 @@ type Species struct {
   Points []*Point
   Color   color.RGBA
 
+  QuasiType string
+
   Rules   map[string]*Rules
 }
 
@@ -59,6 +61,7 @@ func NewSpecies(name string, color color.RGBA) (*Species, error) {
 
 func NewQuasiSpecies(name string) (*Species, error) {
   s, err := NewSpecies(name, rl.DarkPurple)
+  s.QuasiType = name
 
   return s, err
 }
@@ -185,7 +188,7 @@ func (s *Species) Update() {
     for otherColor, rules := range s.Rules {
       other := allSpecies[otherColor]
       grav := rules.Attraction * TheGlobalRules.GravPerAttr
-      rsq := rules.Radius * rules.Radius
+      rulesDistSq := rules.Radius * rules.Radius
 
       // -------------- Loop over other group
       for _, otherPt := range other.Points {
@@ -195,15 +198,15 @@ func (s *Species) Update() {
 
         dx := point.X - otherPt.X
         dy := point.Y - otherPt.Y
-        pairSq := dx*dx + dy*dy
-        if pairSq > rsq {
+        pairDistSq := dx*dx + dy*dy
+        if pairDistSq > rulesDistSq {
           continue
         }
 
-        if pairSq != 0.0 {
-          r := float32(math.Sqrt(float64(pairSq)))
-          fx += otherPt.Mass * dx / r
-          fy += otherPt.Mass * dy / r
+        if pairDistSq != 0.0 {
+          pairDist := float32(math.Sqrt(float64(pairDistSq)))
+          fx += otherPt.Mass * dx / pairDist
+          fy += otherPt.Mass * dy / pairDist
         }
 
       }
@@ -250,6 +253,9 @@ func (s *Species) Draw() {
 }
 
 func (s *Species) DrawOne(pt *Point) {
+  if pt.Species.QuasiType == "center" {
+    rl.DrawCircle(int32(pt.X), int32(pt.Y), pt.r + 3, rl.Black)
+  }
   rl.DrawCircle(int32(pt.X), int32(pt.Y), pt.r, pt.Species.Color)
 }
 
