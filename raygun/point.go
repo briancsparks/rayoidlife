@@ -27,12 +27,16 @@ func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (pt *Point) Update() {
-  pt.Species.UpdateOne(pt)
+// Update can update the Point, and returns true if it does, false otherwise.
+func (pt *Point) Update() bool {
+  return false
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Draw() {
-  pt.Species.DrawOne(pt)
+  if pt.Species.QuasiType == "center" {
+    rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
+  }
+  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
 }

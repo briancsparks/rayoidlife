@@ -135,7 +135,10 @@ func DrawAllSpecies() {
 
 func (s *Species) Update() {
   for _, point := range s.Points {
-    //point.Update()
+    // Give the point a chance to do its own update
+    if point.Update() {
+      continue
+    }
 
     // TODO: Make a Vector2
     fx, fy := float32(0.0), float32(0.0)
@@ -189,24 +192,9 @@ func (s *Species) Update() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) UpdateOne(pt *Point) {
-  pt.pos = rl.Vector2Add(pt.pos, pt.vel)
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
 func (s *Species) Draw() {
   for _, point := range s.Points {
     point.Draw()
   }
-}
-
-// -------------------------------------------------------------------------------------------------------------------
-
-func (s *Species) DrawOne(pt *Point) {
-  if pt.Species.QuasiType == "center" {
-   rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
-  }
-  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
 }
 
