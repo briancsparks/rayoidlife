@@ -18,7 +18,7 @@ func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
   pt := Point{
     pos:  pos,
     vel:  vel,
-    r:    10,
+    r:    6,
     Mass: 1,
   }
 

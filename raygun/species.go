@@ -41,10 +41,12 @@ func NewSpecies(name string, color color.RGBA) (*Species, error) {
   for _, species := range allSpecies {
     if species == s {
       // Self
-      s.InteractWith(s, &Rules{
-        Attraction: TheGlobalRules.SelfAttractionDef,
-        Radius:     TheGlobalRules.SelfRadiusDef,
-      })
+      s.InteractWith(s, NewRulesWithSep(
+        TheGlobalRules.SelfAttractionDef,
+        TheGlobalRules.SelfRadiusDef,
+        TheGlobalRules.SelfSepFactorDef,
+        TheGlobalRules.SelfSepRadiusDef,
+      ))
       continue
     }
 
@@ -71,7 +73,11 @@ func NewQuasiSpecies(name string) (*Species, error) {
 func (s *Species) MakePoints(n int) {
   for i := 0; i < n; i++ {
     pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
-    pt, _ := NewPointAtV(pos, rl.Vector2{})
+    vel := rl.Vector2{}
+    if s.QuasiType != "center" {
+      vel = randVector2(MaxInitialVelocity())
+    }
+    pt, _ := NewPointAtV(pos, vel)
     s.integrate(pt)
   }
 }
@@ -81,7 +87,11 @@ func (s *Species) MakePoints(n int) {
 func (s *Species) MakeBigPoints(n int, size float32) {
   for i := 0; i < n; i++ {
     pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
-    pt, _ := NewPointAtV(pos, rl.Vector2{})
+    vel := rl.Vector2{}
+    if s.QuasiType != "center" {
+      vel = randVector2(MaxInitialVelocity())
+    }
+    pt, _ := NewPointAtV(pos, vel)
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
     s.integrate(pt)
@@ -92,7 +102,11 @@ func (s *Species) MakeBigPoints(n int, size float32) {
 
 func (s *Species) MakeBigPointsAt(n int, size float32, pos rl.Vector2 /*, x, y float32*/) {
   for i := 0; i < n; i++ {
-    pt, _ := NewPointAtV(pos, rl.Vector2{})
+    vel := rl.Vector2{}
+    if s.QuasiType != "center" {
+      vel = randVector2(MaxInitialVelocity())
+    }
+    pt, _ := NewPointAtV(pos, vel)
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
     s.integrate(pt)
@@ -140,13 +154,14 @@ func (s *Species) Update() {
       continue
     }
 
-    // TODO: Make a Vector2
-    fx, fy := float32(0.0), float32(0.0)
-
     for otherColor, rules := range s.Rules {
       other := allSpecies[otherColor]
       grav := rules.Attraction * TheGlobalRules.GravPerAttr
       rulesDistSq := rules.Radius * rules.Radius
+      rulesSepDistSq := rules.SepRadius * rules.SepRadius
+
+      // TODO: Make a Vector2
+      fx, fy := float32(0.0), float32(0.0)
 
       // -------------- Loop over other group
       for _, otherPt := range other.Points {
@@ -154,19 +169,33 @@ func (s *Species) Update() {
           continue
         }
 
+        fxOther, fyOther := float32(0.0), float32(0.0)
+
         dist := rl.Vector2Subtract(point.pos, otherPt.pos)
         pairDistSq := rl.Vector2LenSqr(dist)
-        if pairDistSq > rulesDistSq {
-         continue
+
+        // Attraction
+        if !TheGlobalRules.SkipAttractionRule {
+
+          if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
+            pairDist := float32(math.Sqrt(float64(pairDistSq)))
+            fxOther += otherPt.Mass * dist.X / pairDist
+            fyOther += otherPt.Mass * dist.Y / pairDist
+          }
         }
 
-        if pairDistSq == 0.0 {
-         continue
+        // Separation
+        if !TheGlobalRules.SkipSeparationRule {
+
+          if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
+            // We are too close
+            fxOther *= rules.SepFactor
+            fyOther *= rules.SepFactor
+          }
         }
 
-        pairDist := float32(math.Sqrt(float64(pairDistSq)))
-        fx += otherPt.Mass * dist.X / pairDist
-        fy += otherPt.Mass * dist.Y / pairDist
+        fx += fxOther
+        fy += fyOther
       }
 
       point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})

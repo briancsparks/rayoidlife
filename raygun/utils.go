@@ -41,6 +41,27 @@ func randUpToN(max int32) float32 {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+func randVector2(maxLen float32) rl.Vector2 {
+  deg := randBetween(0, 2 * rl.Pi)
+  len := randBetween(0, maxLen)
+  x, y := xy(deg, len)
+
+  //x,y = 0,0
+  return rl.Vector2{
+    X: x,
+    Y: y,
+  }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func xy(deg, len float32) (float32, float32) {
+  x, y := math.Sincos(float64(deg))
+  return float32(x * float64(len)), float32(y * float64(len))
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 func maxInt(a, b int32) int32 {
   if a > b {
     return a
