@@ -70,7 +70,7 @@ func NewQuasiSpecies(name string) (*Species, error) {
 
 func (s *Species) MakePoints(n int) {
   for i := 0; i < n; i++ {
-    pos := rl.Vector2{X: randUpToN(CurrentScreenWidth), Y: randUpToN(CurrentScreenHeight)}
+    pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
     pt, _ := NewPointAtV(pos, rl.Vector2{})
     s.integrate(pt)
   }
@@ -80,7 +80,7 @@ func (s *Species) MakePoints(n int) {
 
 func (s *Species) MakeBigPoints(n int, size float32) {
   for i := 0; i < n; i++ {
-    pos := rl.Vector2{X: randUpToN(CurrentScreenWidth), Y: randUpToN(CurrentScreenHeight)}
+    pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
     pt, _ := NewPointAtV(pos, rl.Vector2{})
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
@@ -180,10 +180,10 @@ func (s *Species) Update() {
     point.pos = rl.Vector2Add(point.pos, point.vel)
 
     // Bounce off edges
-    if clamped(&point.pos.X, 0, float32(CurrentScreenWidth)) {
+    if clamped(&point.pos.X, 0, CurrentScreenWidth) {
      point.vel.X *= -1
     }
-    if clamped(&point.pos.Y, 0, float32(CurrentScreenHeight)) {
+    if clamped(&point.pos.Y, 0, CurrentScreenHeight) {
      point.vel.Y *= -1
     }
 

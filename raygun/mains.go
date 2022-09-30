@@ -22,17 +22,17 @@ func MainOne() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-const res4kW = 3840
-const res4kH = 2160
+const res4kW = float32(3840)
+const res4kH = float32(2160)
 
 var (
-  InitialScreenWidth  int32 = 0.90 * res4kW
-  InitialScreenHeight int32 = 0.90 * res4kH
-  CurrentScreenWidth  int32
-  CurrentScreenHeight int32
-  CurrentScreenRadius int32
-  CurrentScreenMidX   int32
-  CurrentScreenMidY   int32
+  InitialScreenWidth  float32 = 0.90 * res4kW
+  InitialScreenHeight float32 = 0.90 * res4kH
+  CurrentScreenWidth  float32
+  CurrentScreenHeight float32
+  CurrentScreenRadius float32
+  CurrentScreenMidX   float32
+  CurrentScreenMidY   float32
 
   CurrentScreenCenter rl.Vector2
 )
@@ -40,12 +40,12 @@ var (
 func MainTwo() {
 
   // --------------------------------- Initialize ---------------------------------
-  var screenWidth, screenHeight int32 = InitialScreenWidth, InitialScreenHeight
+  var screenWidth, screenHeight float32 = InitialScreenWidth, InitialScreenHeight
   CurrentScreenWidth, CurrentScreenHeight = InitialScreenWidth, InitialScreenHeight
   CurrentScreenMidX, CurrentScreenMidY = CurrentScreenWidth/2, CurrentScreenHeight/2
-  CurrentScreenCenter = rl.Vector2{X: float32(CurrentScreenMidX), Y: float32(CurrentScreenMidY)}
+  CurrentScreenCenter = rl.Vector2{X: CurrentScreenMidX, Y: CurrentScreenMidY}
 
-  CurrentScreenRadius = maxInt(CurrentScreenWidth, CurrentScreenHeight)
+  CurrentScreenRadius = maxFloat32(CurrentScreenWidth, CurrentScreenHeight)
 
   // ---------- Species ----------
 
@@ -82,10 +82,10 @@ func MainTwo() {
   whites.InteractWith(robots, Friendly(float32(CurrentScreenRadius) / 12))
 
   robots.InteractWith(robots, Ignore)
-  robots.InteractWith(center, NewRules(1.0, float32(CurrentScreenRadius)))
+  robots.InteractWith(center, NewRules(1.0, CurrentScreenRadius))
 
 
-  rl.InitWindow(screenWidth, screenHeight, "Two, what did you expect?")
+  rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
   rl.SetTargetFPS(60)
