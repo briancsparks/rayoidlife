@@ -3,6 +3,7 @@ package raygun
 import (
   rl "github.com/gen2brain/raylib-go/raylib"
   "image/color"
+  "log"
   "math"
 )
 
@@ -21,9 +22,11 @@ type Species struct {
 // -------------------------------------------------------------------------------------------------------------------
 
 var allSpecies map[string]*Species
+var speciesQuadTrees map[string]*HQuadTree
 
 func init() {
   allSpecies = map[string]*Species{}
+  speciesQuadTrees = map[string]*HQuadTree{}
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -132,6 +135,19 @@ func (s *Species) InteractWith(other *Species, rules *Rules) {
 // -------------------------------------------------------------------------------------------------------------------
 
 func UpdateAllSpecies() {
+  for name, species := range allSpecies {
+    quadTree := NewQuadTree(0, 0, CurrentScreenWidth, CurrentScreenHeight, species.Color)
+    quadTree.addPoints(species.Points)
+
+    quadCount := quadTree.count()
+    specCount := len(species.Points)
+    if quadCount != specCount {
+      log.Panic("Wrong counts")
+    }
+
+    speciesQuadTrees[name] = quadTree
+  }
+
   for _, species := range allSpecies {
     species.Update()
   }
@@ -142,6 +158,10 @@ func UpdateAllSpecies() {
 func DrawAllSpecies() {
   for _, species := range allSpecies {
     species.Draw()
+  }
+
+  for _, tree := range speciesQuadTrees {
+    tree.Draw()
   }
 }
 
