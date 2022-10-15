@@ -28,7 +28,7 @@ func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
 // -------------------------------------------------------------------------------------------------------------------
 
 // Update can update the Point, and returns true if it does, false otherwise.
-func (pt *Point) Update() bool {
+func (pt *Point) Update(st *ComputeStats) bool {
   return false
 }
 
