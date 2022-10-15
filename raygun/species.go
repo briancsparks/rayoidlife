@@ -168,8 +168,7 @@ func DrawAllSpecies(st *ComputeStats) {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (s *Species) Update(st *ComputeStats) {
-  numSqrts := 0
-  numCmps := 0
+  stats := ComputeStatsData{}
 
   for _, point := range s.Points {
     // Give the point a chance to do its own update
@@ -200,10 +199,10 @@ func (s *Species) Update(st *ComputeStats) {
         // Attraction
         if !TheGlobalRules.SkipAttractionRule {
 
-          numCmps += 1
+          stats.Cmps += 1
           if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
             pairDist := float32(math.Sqrt(float64(pairDistSq)))
-            numSqrts += 1
+            stats.Sqrts += 1
             fxOther += otherPt.Mass * dist.X / pairDist
             fyOther += otherPt.Mass * dist.Y / pairDist
           }
@@ -212,7 +211,7 @@ func (s *Species) Update(st *ComputeStats) {
         // Separation
         if !TheGlobalRules.SkipSeparationRule {
 
-          numCmps += 1
+          stats.Cmps += 1
           if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
             // We are too close
             fxOther *= rules.SepFactor
@@ -244,8 +243,8 @@ func (s *Species) Update(st *ComputeStats) {
     }
 
   }
-  st.addSqrt(numSqrts)
-  st.addCmp(numCmps)
+
+  st.addStats(stats)
 }
 
 // -------------------------------------------------------------------------------------------------------------------

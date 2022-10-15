@@ -4,41 +4,49 @@ import "sync"
 
 // -------------------------------------------------------------------------------------------------------------------
 
-type ComputeStats struct {
+type ComputeStatsData struct {
   Cmps      int
   Sqrts     int
-
-  AddCmp   *chan int
-  AddSqrt  *chan int
-
-  Stats    *chan chan ComputeStats
 }
 
-func (st *ComputeStats) addCmp(n int) {
-  *st.AddCmp <- n
+func (std *ComputeStatsData) accumulate(that *ComputeStatsData) {
+  std.Cmps  += that.Cmps
+  std.Sqrts += that.Sqrts
 }
 
-func (st *ComputeStats) addSqrt(n int) {
-  *st.AddSqrt <- n
+// -------------------------------------------------------------------------------------------------------------------
+
+type ComputeStats struct {
+  data      ComputeStatsData
+
+  AddStats *chan ComputeStatsData
+
+  Stats    *chan chan ComputeStatsData
+}
+
+func (st *ComputeStats) addStats(std ComputeStatsData) {
+  *st.AddStats <- std
 }
 
 func (st *ComputeStats) Reset() {
-  st.Cmps = 0
-  st.Sqrts = 0
+  st.data.Cmps = 0
+  st.data.Sqrts = 0
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func StartComputeStatsAgent() *ComputeStats {
-  addCmp  := make(chan int, 1000)
-  addSqrt := make(chan int, 1000)
 
-  stats   := make(chan chan ComputeStats)
+  stats   := make(chan chan ComputeStatsData)
+  addData := make(chan ComputeStatsData)
 
   st := &ComputeStats{
-    AddSqrt: &addSqrt,
-    AddCmp:  &addCmp,
+    data: ComputeStatsData{
+      Cmps:    0,
+      Sqrts:   0,
+    },
     Stats:   &stats,
+    AddStats: &addData,
   }
   st.start()
   return st
@@ -53,18 +61,18 @@ func (st *ComputeStats) start() {
   go func() {
     wg.Done()
 
-    var n int
+    //var n int
 
     for {
       select {
-      case n = <- *st.AddSqrt:
-        st.Sqrts += n
-
-      case n = <- *st.AddCmp:
-        st.Cmps += n
+      case d := <- *st.AddStats:
+        st.data.accumulate(&d)
 
       case ch := <- *st.Stats:
-        ch <- st.GetData()
+        ch <- ComputeStatsData{
+          Cmps:    st.data.Cmps,
+          Sqrts:   st.data.Sqrts,
+        }
       }
     }
   }()
@@ -74,9 +82,18 @@ func (st *ComputeStats) start() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (st *ComputeStats) GetData() ComputeStats {
-  return ComputeStats{
-    Cmps:    st.Cmps,
-    Sqrts:   st.Sqrts,
-  }
+func (st *ComputeStats) GetData() ComputeStatsData {
+  result := ComputeStatsData{}
+  ch := make(chan ComputeStatsData)
+
+  wg := sync.WaitGroup{}
+  wg.Add(1)
+  go func() {
+    defer wg.Done()
+    result = <- ch
+  }()
+  *st.Stats <- ch
+
+  wg.Wait()
+  return result
 }
