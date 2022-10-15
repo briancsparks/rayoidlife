@@ -61,8 +61,6 @@ func (st *ComputeStats) start() {
   go func() {
     wg.Done()
 
-    //var n int
-
     for {
       select {
       case d := <- *st.AddStats:
