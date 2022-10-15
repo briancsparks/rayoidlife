@@ -61,15 +61,15 @@ func NewQuadTree(l, t, r, b float32, c color.RGBA) *HQuadTree {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *VQuadTree) addPoints(pts []*Point) {
+func (t *VQuadTree) addPoints(pts []*Point, st *ComputeStats) {
   for _, pt := range pts {
-    t.addPoint(pt)
+    t.addPoint(pt, st)
   }
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *VQuadTree) addPoint(pt *Point) bool {
+func (t *VQuadTree) addPoint(pt *Point, st *ComputeStats) bool {
   if !t.contains(pt) {
     return false
   }
@@ -78,8 +78,8 @@ func (t *VQuadTree) addPoint(pt *Point) bool {
 
   // If we're already using subtrees, just pass along
   if t.aTree != nil {
-    added = added || t.aTree.addPoint(pt)
-    added = added || t.bTree.addPoint(pt)
+    added = added || t.aTree.addPoint(pt, st)
+    added = added || t.bTree.addPoint(pt, st)
     return added
   }
 
@@ -89,7 +89,7 @@ func (t *VQuadTree) addPoint(pt *Point) bool {
   }
 
   t.aTree, t.bTree = t.parent.split(t)
-  return t.addPoint(pt)
+  return t.addPoint(pt, st)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -155,15 +155,15 @@ func (t *VQuadTree) Draw() {
 // ===================================================================================================================
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *HQuadTree) addPoints(pts []*Point) {
+func (t *HQuadTree) addPoints(pts []*Point, st *ComputeStats) {
   for _, pt := range pts {
-    t.addPoint(pt)
+    t.addPoint(pt, st)
   }
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *HQuadTree) addPoint(pt *Point) bool {
+func (t *HQuadTree) addPoint(pt *Point, st *ComputeStats) bool {
   if !t.contains(pt) {
     return false
   }
@@ -172,8 +172,8 @@ func (t *HQuadTree) addPoint(pt *Point) bool {
 
   // If we're already using subtrees, just pass along
   if t.aTree != nil {
-    added = added || t.aTree.addPoint(pt)
-    added = added || t.bTree.addPoint(pt)
+    added = added || t.aTree.addPoint(pt, st)
+    added = added || t.bTree.addPoint(pt, st)
     return added
   }
 
@@ -183,7 +183,7 @@ func (t *HQuadTree) addPoint(pt *Point) bool {
   }
 
   t.aTree, t.bTree = t.parent.split(t)
-  return t.addPoint(pt)
+  return t.addPoint(pt, st)
 }
 
 // -------------------------------------------------------------------------------------------------------------------

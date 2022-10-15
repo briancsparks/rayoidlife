@@ -1,6 +1,9 @@
 package raygun
 
-import rl "github.com/gen2brain/raylib-go/raylib"
+import (
+  "fmt"
+  rl "github.com/gen2brain/raylib-go/raylib"
+)
 
 // -------------------------------------------------------------------------------------------------------------------
 
@@ -91,17 +94,22 @@ func MainTwo() {
   rl.SetTargetFPS(60)
 
 
+  stats := StartComputeStatsAgent()
   for !rl.WindowShouldClose() {
+    stats.Reset()
 
     // --------------------------------- Update -------------------------------------
-    UpdateAllSpecies()
+    UpdateAllSpecies(stats)
 
     // --------------------------------- Draw ---------------------------------------
     rl.BeginDrawing()
     rl.ClearBackground(rl.SkyBlue)
     //rl.BeginMode2D(camera)
 
-    DrawAllSpecies()
+    DrawAllSpecies(stats)
+
+    st := stats.GetData()
+    rl.SetWindowTitle(fmt.Sprintf("FPS: %f, sqrts: %08d, cmps: %08d", rl.GetFPS(), st.Sqrts, st.Cmps))
 
     //rl.EndMode2D()
     rl.EndDrawing()

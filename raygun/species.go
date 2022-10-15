@@ -134,10 +134,10 @@ func (s *Species) InteractWith(other *Species, rules *Rules) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func UpdateAllSpecies() {
+func UpdateAllSpecies(st *ComputeStats) {
   for name, species := range allSpecies {
     quadTree := NewQuadTree(0, 0, CurrentScreenWidth, CurrentScreenHeight, species.Color)
-    quadTree.addPoints(species.Points)
+    quadTree.addPoints(species.Points, st)
 
     quadCount := quadTree.count()
     specCount := len(species.Points)
@@ -149,15 +149,15 @@ func UpdateAllSpecies() {
   }
 
   for _, species := range allSpecies {
-    species.Update()
+    species.Update(st)
   }
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func DrawAllSpecies() {
+func DrawAllSpecies(st *ComputeStats) {
   for _, species := range allSpecies {
-    species.Draw()
+    species.Draw(st)
   }
 
   for _, tree := range speciesQuadTrees {
@@ -167,10 +167,12 @@ func DrawAllSpecies() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) Update() {
+func (s *Species) Update(st *ComputeStats) {
+  stats := ComputeStatsData{}
+
   for _, point := range s.Points {
     // Give the point a chance to do its own update
-    if point.Update() {
+    if point.Update(st) {
       continue
     }
 
@@ -197,8 +199,10 @@ func (s *Species) Update() {
         // Attraction
         if !TheGlobalRules.SkipAttractionRule {
 
+          stats.Cmps += 1
           if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
             pairDist := float32(math.Sqrt(float64(pairDistSq)))
+            stats.Sqrts += 1
             fxOther += otherPt.Mass * dist.X / pairDist
             fyOther += otherPt.Mass * dist.Y / pairDist
           }
@@ -207,6 +211,7 @@ func (s *Species) Update() {
         // Separation
         if !TheGlobalRules.SkipSeparationRule {
 
+          stats.Cmps += 1
           if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
             // We are too close
             fxOther *= rules.SepFactor
@@ -223,6 +228,7 @@ func (s *Species) Update() {
 
     // ---------- Finalize computations ----------
 
+    // TODO -- this calls sqrt
     clampV2(&point.vel, TheGlobalRules.MaxVelocity)
 
     // Update position
@@ -237,11 +243,13 @@ func (s *Species) Update() {
     }
 
   }
+
+  st.addStats(stats)
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) Draw() {
+func (s *Species) Draw(st *ComputeStats) {
   for _, point := range s.Points {
     point.Draw()
   }
