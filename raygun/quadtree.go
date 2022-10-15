@@ -8,7 +8,7 @@ import (
 
 // -------------------------------------------------------------------------------------------------------------------
 
-var capacity int = 15
+var capacity int = TheGlobalRules.QuadTreeCap
 
 // -------------------------------------------------------------------------------------------------------------------
 
@@ -83,11 +83,23 @@ func (t *VQuadTree) addPoint(pt *Point, st *ComputeStats) bool {
     return added
   }
 
-  if len(t.Points) < capacity {
-    t.Points = append(t.Points, pt)
-    return true
+  preferAppend := true
+  if TheGlobalRules.QuadTreeStrat == 1 {
+    if t.area() > TheGlobalRules.QuadTreeArea {
+      preferAppend = false
+    }
   }
 
+  if preferAppend {
+    if len(t.Points) < capacity {
+      t.Points = append(t.Points, pt)
+      return true
+    }
+  }
+
+
+  // Upon entering, there were no subtrees, but we are at capacity, so we need to create
+  //   the subtrees here. Recursing is the simplest way to then add to myself.
   t.aTree, t.bTree = t.parent.split(t)
   return t.addPoint(pt, st)
 }
@@ -151,6 +163,15 @@ func (t *VQuadTree) Draw() {
   }
 }
 
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *HQuadTree) area() float32 {
+  w := t.right - t.left
+  h := t.parent.bottom - t.parent.top
+
+  return w * h
+}
+
 
 // ===================================================================================================================
 // -------------------------------------------------------------------------------------------------------------------
@@ -177,11 +198,22 @@ func (t *HQuadTree) addPoint(pt *Point, st *ComputeStats) bool {
     return added
   }
 
-  if len(t.Points) < capacity {
-    t.Points = append(t.Points, pt)
-    return true
+  preferAppend := true
+  if TheGlobalRules.QuadTreeStrat == 1 {
+    if t.area() > TheGlobalRules.QuadTreeArea {
+      preferAppend = false
+    }
   }
 
+  if preferAppend {
+    if len(t.Points) < capacity {
+      t.Points = append(t.Points, pt)
+      return true
+    }
+  }
+
+  // Upon entering, there were no subtrees, but we are at capacity, so we need to create
+  //   the subtrees here. Recursing is the simplest way to then add to myself.
   t.aTree, t.bTree = t.parent.split(t)
   return t.addPoint(pt, st)
 }
@@ -245,5 +277,14 @@ func (t *HQuadTree) Draw() {
   }
 }
 
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *VQuadTree) area() float32 {
+  w := t.parent.right - t.parent.left
+  h := t.bottom - t.top
+
+  return w * h
+}
 
 

@@ -22,6 +22,11 @@ type GlobalRules struct {
 
   SkipAttractionRule  bool
   SkipSeparationRule  bool
+
+  QuadTreeCap         int
+
+  QuadTreeStrat       int
+  QuadTreeArea        float32
 }
 var TheGlobalRules *GlobalRules = &GlobalRules{
   GravPerAttr: 1.0 / -500.0,
@@ -35,6 +40,13 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
 
   SkipAttractionRule: false,
   SkipSeparationRule: false,
+
+  QuadTreeCap: 100,
+
+  //QuadTreeStrat: 0,
+  //QuadTreeArea: -1.0,
+  QuadTreeStrat: 1,
+  QuadTreeArea: 10.0 * 10.0,
 }
 
 func MaxInitialVelocity() float32 {
