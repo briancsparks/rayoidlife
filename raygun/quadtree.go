@@ -156,6 +156,7 @@ func (t *VQuadTree) Draw() {
   left, right := t.parent.left, t.parent.right
 
   rl.DrawRectangleLines(int32(left), int32(t.top), int32(right - left), int32(t.bottom - t.top), t.Color)
+  
 
   if t.aTree != nil {
     t.aTree.Draw()
