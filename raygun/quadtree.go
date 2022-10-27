@@ -17,6 +17,8 @@ type HQuadTree struct {
   parent, aTree, bTree *VQuadTree
   isA bool
 
+  aggregated  *Point
+
   Points []*Point
   Color   color.RGBA
 }
@@ -27,6 +29,8 @@ type VQuadTree struct {
   top, bottom  float32
   parent, aTree, bTree *HQuadTree
   isA bool
+
+  aggregated  *Point
 
   Points []*Point
   Color   color.RGBA
@@ -179,15 +183,36 @@ func (t *VQuadTree) area() float32 {
 
 func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
 
+  all := false
+  if t.area() <= TheGlobalRules.QuadTreeArea {
+    all = true
+  }
+
   // If we are 'A' (top), this whole tree is excluded if the point+r is less than our left
   if t.isA {
     if point.pos.Y + rules.Radius < t.top {
       return
     }
+
+    all = all && (point.pos.Y + rules.Radius >= t.bottom)
   } else {
     if point.pos.Y - rules.Radius > t.bottom {
       return
     }
+
+    all = all && (point.pos.Y - rules.Radius <= t.top)
+  }
+
+  if all {
+    if t.aggregated == nil {
+      t.aggregated, _ = NewPointAt(rl.Vector2{
+        X: (t.parent.left + t.parent.right) / 2,
+        Y: (t.bottom + t.top) / 2,
+      })
+      t.aggregated.Mass = t.totalMass()
+    }
+    *pts = append(*pts, t.aggregated)
+    return
   }
 
   //*pts = append(*pts, t.Points...)
@@ -199,6 +224,24 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
     t.aTree.getPoints(point, rules, pts)
     t.bTree.getPoints(point, rules, pts)
   }
+
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *VQuadTree) totalMass() float32 {
+  var result float32 = 0
+  for _, point := range t.Points {
+    result += point.Mass
+  }
+  //result := len(t.Points)
+
+  if t.aTree != nil {
+    result += t.aTree.totalMass()
+    result += t.bTree.totalMass()
+  }
+
+  return result
 }
 
 
@@ -319,15 +362,36 @@ func (t *HQuadTree) area() float32 {
 
 func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
 
+  all := false
+  if t.area() <= TheGlobalRules.QuadTreeArea {
+    all = true
+  }
+
   // If we are 'A' (left), this whole tree is excluded if the point+r is less than our left
   if t.isA {
    if point.pos.X + rules.Radius < t.left {
      return
    }
+
+   all = all && (point.pos.X + rules.Radius >= t.right)
   } else {
-   if point.pos.X - rules.Radius > t.right {
-     return
-   }
+    if point.pos.X - rules.Radius > t.right {
+      return
+    }
+
+    all = all && (point.pos.X - rules.Radius <= t.left)
+  }
+
+  if all {
+    if t.aggregated == nil {
+      t.aggregated, _ = NewPointAt(rl.Vector2{
+        X: (t.left + t.right) / 2,
+        Y: (t.parent.bottom + t.parent.top) / 2,
+      })
+      t.aggregated.Mass = t.totalMass()
+    }
+    *pts = append(*pts, t.aggregated)
+    return
   }
 
   //*pts = append(*pts, t.Points...)
@@ -339,6 +403,23 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
     t.aTree.getPoints(point, rules, pts)
     t.bTree.getPoints(point, rules, pts)
   }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *HQuadTree) totalMass() float32 {
+  var result float32 = 0
+  for _, point := range t.Points {
+    result += point.Mass
+  }
+  //result := len(t.Points)
+
+  if t.aTree != nil {
+    result += t.aTree.totalMass()
+    result += t.bTree.totalMass()
+  }
+
+  return result
 }
 
 
