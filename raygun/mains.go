@@ -91,7 +91,7 @@ func MainTwo() {
   rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
-  rl.SetTargetFPS(60)
+  //rl.SetTargetFPS(60)
 
 
   stats := StartComputeStatsAgent()
@@ -109,7 +109,9 @@ func MainTwo() {
     DrawAllSpecies(stats)
 
     st := stats.GetData()
-    rl.SetWindowTitle(fmt.Sprintf("FPS: %f, sqrts: %08d, cmps: %08d", rl.GetFPS(), st.Sqrts, st.Cmps))
+    procPercent := float32(st.PointsProc) / float32(st.Points)
+    rl.SetWindowTitle(fmt.Sprintf("FPS: %f, sqrts: %08d, cmps: %08d #Pts: %08d/%08d (%f)",
+      rl.GetFPS(), st.Sqrts, st.Cmps, st.PointsProc, st.Points, procPercent))
 
     //rl.EndMode2D()
     rl.EndDrawing()

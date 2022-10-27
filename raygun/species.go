@@ -134,6 +134,75 @@ func (s *Species) InteractWith(other *Species, rules *Rules) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+func (s *Species) getPoints(point *Point, rules *Rules) []*Point {
+  //rulesDistSq := rules.Radius * rules.Radius
+  //rulesSepDistSq := rules.SepRadius * rules.SepRadius
+
+  // #4 fastest
+  //var pts []*Point = nil
+  //ch := s.getPointsChan()
+  //for otherPt := range ch {
+  //  pts = append(pts, otherPt)
+  //}
+  //return pts
+
+  // #3 fastest, but carries the length with the slice
+  pts := make([]*Point, 0, len(s.Points))
+
+  qtree := speciesQuadTrees[s.Name]
+  qtree.getPoints(point, rules, &pts)
+
+  //for _, otherPt := range s.Points {
+  // dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+  // pairDistSq := rl.Vector2LenSqr(dist)
+  //
+  // // Attraction
+  // if !TheGlobalRules.SkipAttractionRule {
+  //
+  //   if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
+  //     pts = append(pts, otherPt)
+  //   }
+  // }
+  // // Separation
+  // if !TheGlobalRules.SkipSeparationRule {
+  //
+  //   if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+  //     // We are too close
+  //     pts = append(pts, otherPt)
+  //   }
+  // }
+  //
+  //}
+  return pts
+
+  // #2 fastest (very close to #3, tho)
+  //pts := make([]*Point, len(s.Points))
+  //for i, otherPt := range s.Points {
+  // pts[i] = otherPt
+  //}
+  //return pts
+
+  // #1 fastest
+  //return s.Points
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (s *Species) getPointsChan() chan *Point {
+  ch := make(chan *Point, 500)
+
+  go func() {
+    for _, pt := range s.Points {
+      ch <- pt
+    }
+    close(ch)
+  }()
+
+  return ch
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 func UpdateAllSpecies(st *ComputeStats) {
   for name, species := range allSpecies {
     quadTree := NewQuadTree(0, 0, CurrentScreenWidth, CurrentScreenHeight, species.Color)
@@ -176,59 +245,118 @@ func (s *Species) Update(st *ComputeStats) {
       continue
     }
 
-    for otherColor, rules := range s.Rules {
-      other := allSpecies[otherColor]
-      grav := rules.Attraction * TheGlobalRules.GravPerAttr
-      rulesDistSq := rules.Radius * rules.Radius
-      rulesSepDistSq := rules.SepRadius * rules.SepRadius
+    if TheGlobalRules.QuadTreeCmp {
+      for otherColor, rules := range s.Rules {
+        other := allSpecies[otherColor]
+        grav := rules.Attraction * TheGlobalRules.GravPerAttr
+        rulesDistSq := rules.Radius * rules.Radius
+        rulesSepDistSq := rules.SepRadius * rules.SepRadius
 
-      // TODO: Make a Vector2
-      fx, fy := float32(0.0), float32(0.0)
+        stats.Points += len(other.Points)
 
-      // -------------- Loop over other group
-      for _, otherPt := range other.Points {
-        if point == otherPt {
-          continue
-        }
+        // TODO: Make a Vector2
+        fx, fy := float32(0.0), float32(0.0)
 
-        fxOther, fyOther := float32(0.0), float32(0.0)
-
-        dist := rl.Vector2Subtract(point.pos, otherPt.pos)
-        pairDistSq := rl.Vector2LenSqr(dist)
-
-        // Attraction
-        if !TheGlobalRules.SkipAttractionRule {
-
-          stats.Cmps += 1
-          if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
-            pairDist := float32(math.Sqrt(float64(pairDistSq)))
-            stats.Sqrts += 1
-            fxOther += otherPt.Mass * dist.X / pairDist
-            fyOther += otherPt.Mass * dist.Y / pairDist
+        // -------------- Loop over other group
+        for _, otherPt := range other.getPoints(point, rules) {
+          stats.PointsProc += 1
+          if point == otherPt {
+            continue
           }
-        }
 
-        // Separation
-        if !TheGlobalRules.SkipSeparationRule {
+          // TODO: Make a Vector2
+          fxOther, fyOther := float32(0.0), float32(0.0)
 
-          stats.Cmps += 1
-          if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
-            // We are too close
-            fxOther *= rules.SepFactor
-            fyOther *= rules.SepFactor
+          dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+          pairDistSq := rl.Vector2LenSqr(dist)
+
+          // Attraction
+          if !TheGlobalRules.SkipAttractionRule {
+
+            stats.Cmps += 1
+            if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
+              pairDist := float32(math.Sqrt(float64(pairDistSq)))
+              stats.Sqrts += 1
+              fxOther += otherPt.Mass * dist.X / pairDist
+              fyOther += otherPt.Mass * dist.Y / pairDist
+            }
           }
+
+          // Separation
+          if !TheGlobalRules.SkipSeparationRule {
+
+            stats.Cmps += 1
+            if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
+              // We are too close
+              fxOther *= rules.SepFactor
+              fyOther *= rules.SepFactor
+            }
+          }
+
+          fx += fxOther
+          fy += fyOther
         }
 
-        fx += fxOther
-        fy += fyOther
+        point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
       }
 
-      point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+    } else {
+      for otherColor, rules := range s.Rules {
+        other := allSpecies[otherColor]
+        grav := rules.Attraction * TheGlobalRules.GravPerAttr
+        rulesDistSq := rules.Radius * rules.Radius
+        rulesSepDistSq := rules.SepRadius * rules.SepRadius
+
+        // TODO: Make a Vector2
+        fx, fy := float32(0.0), float32(0.0)
+
+        // -------------- Loop over other group
+        for _, otherPt := range other.Points {
+          if point == otherPt {
+            continue
+          }
+
+          // TODO: Make a Vector2
+          fxOther, fyOther := float32(0.0), float32(0.0)
+
+          dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+          pairDistSq := rl.Vector2LenSqr(dist)
+
+          // Attraction
+          if !TheGlobalRules.SkipAttractionRule {
+
+            stats.Cmps += 1
+            if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
+              pairDist := float32(math.Sqrt(float64(pairDistSq)))
+              stats.Sqrts += 1
+              fxOther += otherPt.Mass * dist.X / pairDist
+              fyOther += otherPt.Mass * dist.Y / pairDist
+            }
+          }
+
+          // Separation
+          if !TheGlobalRules.SkipSeparationRule {
+
+            stats.Cmps += 1
+            if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
+              // We are too close
+              fxOther *= rules.SepFactor
+              fyOther *= rules.SepFactor
+            }
+          }
+
+          fx += fxOther
+          fy += fyOther
+        }
+
+        point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+      }
     }
+
 
     // ---------- Finalize computations ----------
 
-    // TODO -- this calls sqrt
+    // TODO -- this calls sqrt, update stats
     clampV2(&point.vel, TheGlobalRules.MaxVelocity)
 
     // Update position

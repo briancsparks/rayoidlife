@@ -5,13 +5,18 @@ import "sync"
 // -------------------------------------------------------------------------------------------------------------------
 
 type ComputeStatsData struct {
-  Cmps      int
-  Sqrts     int
+  Cmps        int
+  Sqrts       int
+
+  Points      int
+  PointsProc  int
 }
 
 func (std *ComputeStatsData) accumulate(that *ComputeStatsData) {
-  std.Cmps  += that.Cmps
-  std.Sqrts += that.Sqrts
+  std.Cmps        += that.Cmps
+  std.Sqrts       += that.Sqrts
+  std.Points      += that.Points
+  std.PointsProc  += that.PointsProc
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -29,8 +34,10 @@ func (st *ComputeStats) addStats(std ComputeStatsData) {
 }
 
 func (st *ComputeStats) Reset() {
-  st.data.Cmps = 0
-  st.data.Sqrts = 0
+  st.data.Cmps        = 0
+  st.data.Sqrts       = 0
+  st.data.Points      = 0
+  st.data.PointsProc  = 0
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -42,8 +49,10 @@ func StartComputeStatsAgent() *ComputeStats {
 
   st := &ComputeStats{
     data: ComputeStatsData{
-      Cmps:    0,
-      Sqrts:   0,
+      Cmps:       0,
+      Sqrts:      0,
+      Points:     0,
+      PointsProc: 0,
     },
     Stats:   &stats,
     AddStats: &addData,
@@ -68,8 +77,10 @@ func (st *ComputeStats) start() {
 
       case ch := <- *st.Stats:
         ch <- ComputeStatsData{
-          Cmps:    st.data.Cmps,
-          Sqrts:   st.data.Sqrts,
+          Cmps:       st.data.Cmps,
+          Sqrts:      st.data.Sqrts,
+          Points:     st.data.Points,
+          PointsProc: st.data.PointsProc,
         }
       }
     }

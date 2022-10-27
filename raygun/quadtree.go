@@ -59,6 +59,8 @@ func NewQuadTree(l, t, r, b float32, c color.RGBA) *HQuadTree {
   return htree
 }
 
+// ===================================================================================================================
+
 // -------------------------------------------------------------------------------------------------------------------
 
 func (t *VQuadTree) addPoints(pts []*Point, st *ComputeStats) {
@@ -156,7 +158,7 @@ func (t *VQuadTree) Draw() {
   left, right := t.parent.left, t.parent.right
 
   rl.DrawRectangleLines(int32(left), int32(t.top), int32(right - left), int32(t.bottom - t.top), t.Color)
-  
+
 
   if t.aTree != nil {
     t.aTree.Draw()
@@ -166,11 +168,37 @@ func (t *VQuadTree) Draw() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *HQuadTree) area() float32 {
-  w := t.right - t.left
-  h := t.parent.bottom - t.parent.top
+func (t *VQuadTree) area() float32 {
+  w := t.parent.right - t.parent.left
+  h := t.bottom - t.top
 
   return w * h
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
+
+  // If we are 'A' (top), this whole tree is excluded if the point+r is less than our left
+  if t.isA {
+    if point.pos.Y + rules.Radius < t.top {
+      return
+    }
+  } else {
+    if point.pos.Y - rules.Radius > t.bottom {
+      return
+    }
+  }
+
+  //*pts = append(*pts, t.Points...)
+  for _, p := range t.Points {
+    *pts = append(*pts, p)
+  }
+
+  if t.aTree != nil {
+    t.aTree.getPoints(point, rules, pts)
+    t.bTree.getPoints(point, rules, pts)
+  }
 }
 
 
@@ -278,14 +306,40 @@ func (t *HQuadTree) Draw() {
   }
 }
 
-
 // -------------------------------------------------------------------------------------------------------------------
 
-func (t *VQuadTree) area() float32 {
-  w := t.parent.right - t.parent.left
-  h := t.bottom - t.top
+func (t *HQuadTree) area() float32 {
+  w := t.right - t.left
+  h := t.parent.bottom - t.parent.top
 
   return w * h
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
+
+  // If we are 'A' (left), this whole tree is excluded if the point+r is less than our left
+  if t.isA {
+   if point.pos.X + rules.Radius < t.left {
+     return
+   }
+  } else {
+   if point.pos.X - rules.Radius > t.right {
+     return
+   }
+  }
+
+  //*pts = append(*pts, t.Points...)
+  for _, p := range t.Points {
+    *pts = append(*pts, p)
+  }
+
+  if t.aTree != nil {
+    t.aTree.getPoints(point, rules, pts)
+    t.bTree.getPoints(point, rules, pts)
+  }
+}
+
 
 
