@@ -211,6 +211,11 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
       })
       t.aggregated.Mass = t.totalMass()
     }
+    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+    all = all && (dist <= rules.Radius)
+  }
+
+  if all {
     *pts = append(*pts, t.aggregated)
     return
   }
@@ -369,11 +374,11 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
 
   // If we are 'A' (left), this whole tree is excluded if the point+r is less than our left
   if t.isA {
-   if point.pos.X + rules.Radius < t.left {
-     return
-   }
+    if point.pos.X + rules.Radius < t.left {
+      return
+    }
 
-   all = all && (point.pos.X + rules.Radius >= t.right)
+    all = all && (point.pos.X + rules.Radius >= t.right)
   } else {
     if point.pos.X - rules.Radius > t.right {
       return
@@ -390,6 +395,11 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
       })
       t.aggregated.Mass = t.totalMass()
     }
+    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+    all = all && (dist <= rules.Radius)
+  }
+
+  if all {
     *pts = append(*pts, t.aggregated)
     return
   }
