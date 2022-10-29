@@ -9,7 +9,7 @@ type Point struct {
   r           float32
   Mass        float32
 
-  Species *Species
+  SpeciesCo *SpeciesCohort
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -47,8 +47,8 @@ func (pt *Point) Update(st *ComputeStats) bool {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Draw() {
-  if pt.Species.QuasiType == "center" {
+  if pt.SpeciesCo.Species.QuasiType == "center" {
     rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
   }
-  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
+  rl.DrawCircleV(pt.pos, pt.r, pt.SpeciesCo.Species.Color)
 }
