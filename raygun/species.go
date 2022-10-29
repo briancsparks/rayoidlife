@@ -14,6 +14,8 @@ type Species struct {
   Points []*Point
   Color   color.RGBA
 
+  CoName string           /* cohort name */
+
   QuasiType string
 
   Rules   map[string]*Rules
@@ -21,24 +23,27 @@ type Species struct {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+var uniqCoNum int
 var allSpecies map[string]*Species
 var speciesQuadTrees map[string]*HQuadTree
 
 func init() {
   allSpecies = map[string]*Species{}
   speciesQuadTrees = map[string]*HQuadTree{}
+  uniqCoNum = 1
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func NewSpecies(name string, color color.RGBA) (*Species, error) {
+  coName := name + "-00"
   s := &Species{
-    Name:  name,
-    Color: color,
-    Rules: map[string]*Rules{},
+    CoName: coName,
+    Color:  color,
+    Rules:  map[string]*Rules{},
   }
 
-  allSpecies[name] = s
+  allSpecies[coName] = s
 
   // Defaults for species interactions
   for _, species := range allSpecies {
@@ -129,7 +134,7 @@ func (s *Species) integrate(pt *Point) *Point {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (s *Species) InteractWith(other *Species, rules *Rules) {
-  s.Rules[other.Name] = rules
+  s.Rules[other.CoName] = rules
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -149,7 +154,7 @@ func (s *Species) getPoints(point *Point, rules *Rules) []*Point {
   // #3 fastest, but carries the length with the slice
   pts := make([]*Point, 0, len(s.Points))
 
-  qtree := speciesQuadTrees[s.Name]
+  qtree := speciesQuadTrees[s.CoName]
   qtree.getPoints(point, rules, &pts)
 
   //for _, otherPt := range s.Points {
@@ -249,8 +254,6 @@ func (s *Species) Update(st *ComputeStats) {
       for otherColor, rules := range s.Rules {
         other := allSpecies[otherColor]
         grav := rules.Attraction * TheGlobalRules.GravPerAttr
-        rulesDistSq := rules.Radius * rules.Radius
-        rulesSepDistSq := rules.SepRadius * rules.SepRadius
 
         stats.Points += len(other.Points)
 
@@ -274,7 +277,7 @@ func (s *Species) Update(st *ComputeStats) {
           if !TheGlobalRules.SkipAttractionRule {
 
             stats.Cmps += 1
-            if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
+            if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
               pairDist := float32(math.Sqrt(float64(pairDistSq)))
               stats.Sqrts += 1
               fxOther += otherPt.Mass * dist.X / pairDist
@@ -286,7 +289,7 @@ func (s *Species) Update(st *ComputeStats) {
           if !TheGlobalRules.SkipSeparationRule {
 
             stats.Cmps += 1
-            if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
+            if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
               // We are too close
               fxOther *= rules.SepFactor
               fyOther *= rules.SepFactor
@@ -304,8 +307,6 @@ func (s *Species) Update(st *ComputeStats) {
       for otherColor, rules := range s.Rules {
         other := allSpecies[otherColor]
         grav := rules.Attraction * TheGlobalRules.GravPerAttr
-        rulesDistSq := rules.Radius * rules.Radius
-        rulesSepDistSq := rules.SepRadius * rules.SepRadius
 
         // TODO: Make a Vector2
         fx, fy := float32(0.0), float32(0.0)
@@ -326,7 +327,7 @@ func (s *Species) Update(st *ComputeStats) {
           if !TheGlobalRules.SkipAttractionRule {
 
             stats.Cmps += 1
-            if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
+            if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
               pairDist := float32(math.Sqrt(float64(pairDistSq)))
               stats.Sqrts += 1
               fxOther += otherPt.Mass * dist.X / pairDist
@@ -338,7 +339,7 @@ func (s *Species) Update(st *ComputeStats) {
           if !TheGlobalRules.SkipSeparationRule {
 
             stats.Cmps += 1
-            if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
+            if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
               // We are too close
               fxOther *= rules.SepFactor
               fyOther *= rules.SepFactor
