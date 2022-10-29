@@ -15,12 +15,6 @@ type SpeciesCohort struct {
   CoName  string
   Points  []*Point
   QuadTree  *HQuadTree
-
-  //Color   color.RGBA
-
-  //QuasiType string
-
-  //Rules   map[string]*Rules
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -28,11 +22,7 @@ type SpeciesCohort struct {
 type Species struct {
   Name    string
   Color   color.RGBA
-  //NumCos  int             /* number of cohorts */
-
   Cohorts   map[string]*SpeciesCohort
-
-  //CoName string           /* cohort name */
 
   QuasiType string
 
@@ -41,22 +31,15 @@ type Species struct {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-//var uniqCoNum int
 var allSpecies map[string]*Species
-//var allSpeciesCohorts map[string]*SpeciesCohort
-//var speciesQuadTrees map[string]*HQuadTree
 
 func init() {
   allSpecies = map[string]*Species{}
-  //allSpeciesCohorts = map[string]*SpeciesCohort{}
-  //speciesQuadTrees = map[string]*HQuadTree{}
-  //uniqCoNum = 1
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func NewSpecies(name string, color color.RGBA) (*Species, error) {
-  //coName := name + "-00"
   s := &Species{
     Name:      name,
     Color:     color,
@@ -316,7 +299,6 @@ func DrawAllSpecies(st *ComputeStats) {
 
 func (sco *SpeciesCohort) Update(st *ComputeStats) {
   stats := ComputeStatsData{}
-  //s := sco.Species
 
   for _, point := range sco.Points {
     // Give the point a chance to do its own update
@@ -334,7 +316,6 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
           }
 
           for _, other := range species.Cohorts {
-            //other := allSpeciesCohorts[otherColor]
             grav := rules.Attraction * TheGlobalRules.GravPerAttr
 
             stats.Points += len(other.Points)
@@ -397,7 +378,6 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
           }
 
           for _, other := range species.Cohorts {
-            //other := allSpeciesCohorts[otherColor]
             grav := rules.Attraction * TheGlobalRules.GravPerAttr
 
             // TODO: Make a Vector2

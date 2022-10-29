@@ -67,8 +67,6 @@ func MainTwo() {
 
   // ---------- Populations ----------
   reds := redSpecies.MakePoints(100)
-  redSpecies.MakePoints(100)
-  //redSpecies.MakePoints(100)
   //redSpecies.MakePoints(100)
   greens := greenSpecies.MakePoints(1)
   blues := blueSpecies.MakePoints(100)

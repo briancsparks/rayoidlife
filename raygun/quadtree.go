@@ -220,7 +220,6 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
     return
   }
 
-  //*pts = append(*pts, t.Points...)
   for _, p := range t.Points {
     *pts = append(*pts, p)
   }
@@ -239,7 +238,6 @@ func (t *VQuadTree) totalMass() float32 {
   for _, point := range t.Points {
     result += point.Mass
   }
-  //result := len(t.Points)
 
   if t.aTree != nil {
     result += t.aTree.totalMass()
@@ -404,7 +402,6 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
     return
   }
 
-  //*pts = append(*pts, t.Points...)
   for _, p := range t.Points {
     *pts = append(*pts, p)
   }
@@ -422,7 +419,6 @@ func (t *HQuadTree) totalMass() float32 {
   for _, point := range t.Points {
     result += point.Mass
   }
-  //result := len(t.Points)
 
   if t.aTree != nil {
     result += t.aTree.totalMass()
