@@ -9,7 +9,7 @@ type Point struct {
   r           float32
   Mass        float32
 
-  Species *Species
+  SpeciesCo *SpeciesCohort
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -27,6 +27,18 @@ func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+func NewPointAt(pos rl.Vector2) (*Point, error) {
+  pt := Point{
+    pos:  pos,
+    r:    1,
+    Mass: 1,
+  }
+
+  return &pt, nil
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 // Update can update the Point, and returns true if it does, false otherwise.
 func (pt *Point) Update(st *ComputeStats) bool {
   return false
@@ -35,8 +47,8 @@ func (pt *Point) Update(st *ComputeStats) bool {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Draw() {
-  if pt.Species.QuasiType == "center" {
+  if pt.SpeciesCo.Species.QuasiType == "center" {
     rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
   }
-  rl.DrawCircleV(pt.pos, pt.r, pt.Species.Color)
+  rl.DrawCircleV(pt.pos, pt.r, pt.SpeciesCo.Species.Color)
 }

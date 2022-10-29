@@ -1,6 +1,7 @@
 package raygun
 
 import (
+  "fmt"
   rl "github.com/gen2brain/raylib-go/raylib"
   "image/color"
   "log"
@@ -9,10 +10,29 @@ import (
 
 // -------------------------------------------------------------------------------------------------------------------
 
+type SpeciesCohort struct {
+  Species *Species
+  CoName  string
+  Points  []*Point
+  QuadTree  *HQuadTree
+
+  //Color   color.RGBA
+
+  //QuasiType string
+
+  //Rules   map[string]*Rules
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 type Species struct {
-  Name   string
-  Points []*Point
+  Name    string
   Color   color.RGBA
+  //NumCos  int             /* number of cohorts */
+
+  Cohorts   map[string]*SpeciesCohort
+
+  //CoName string           /* cohort name */
 
   QuasiType string
 
@@ -21,21 +41,28 @@ type Species struct {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+//var uniqCoNum int
 var allSpecies map[string]*Species
-var speciesQuadTrees map[string]*HQuadTree
+//var allSpeciesCohorts map[string]*SpeciesCohort
+//var speciesQuadTrees map[string]*HQuadTree
 
 func init() {
   allSpecies = map[string]*Species{}
-  speciesQuadTrees = map[string]*HQuadTree{}
+  //allSpeciesCohorts = map[string]*SpeciesCohort{}
+  //speciesQuadTrees = map[string]*HQuadTree{}
+  //uniqCoNum = 1
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func NewSpecies(name string, color color.RGBA) (*Species, error) {
+  //coName := name + "-00"
   s := &Species{
-    Name:  name,
-    Color: color,
-    Rules: map[string]*Rules{},
+    Name:      name,
+    Color:     color,
+    Cohorts:   map[string]*SpeciesCohort{},
+    QuasiType: "",
+    Rules:     map[string]*Rules{},
   }
 
   allSpecies[name] = s
@@ -73,7 +100,16 @@ func NewQuasiSpecies(name string) (*Species, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakePoints(n int) {
+func (s *Species) MakePoints(n int) *SpeciesCohort {
+  coNum := len(s.Cohorts)
+  sco := SpeciesCohort{
+    Species: s,
+    CoName:  fmt.Sprintf("%s-%02d", s.Name, coNum),
+    Points:  nil,
+    QuadTree: nil,
+  }
+
+  // Generate points
   for i := 0; i < n; i++ {
     pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
     vel := rl.Vector2{}
@@ -81,13 +117,27 @@ func (s *Species) MakePoints(n int) {
       vel = randVector2(MaxInitialVelocity())
     }
     pt, _ := NewPointAtV(pos, vel)
-    s.integrate(pt)
+    sco.integrate(pt)
   }
+
+  // Add the cohort to the list of cohorts in Species
+  s.Cohorts[sco.CoName] = &sco
+
+  return &sco
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakeBigPoints(n int, size float32) {
+func (s *Species) MakeBigPoints(n int, size float32) *SpeciesCohort {
+  coNum := len(s.Cohorts)
+  sco := SpeciesCohort{
+    Species: s,
+    CoName:  fmt.Sprintf("%s-%02d", s.Name, coNum),
+    Points:  nil,
+    QuadTree: nil,
+  }
+
+  // Generate points
   for i := 0; i < n; i++ {
     pos := rl.Vector2{X: randUpTo(CurrentScreenWidth), Y: randUpTo(CurrentScreenHeight)}
     vel := rl.Vector2{}
@@ -97,13 +147,27 @@ func (s *Species) MakeBigPoints(n int, size float32) {
     pt, _ := NewPointAtV(pos, vel)
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
-    s.integrate(pt)
+    sco.integrate(pt)
   }
+
+  // Add the cohort to the list of cohorts in Species
+  s.Cohorts[sco.CoName] = &sco
+
+  return &sco
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) MakeBigPointsAt(n int, size float32, pos rl.Vector2 /*, x, y float32*/) {
+func (s *Species) MakeBigPointsAt(n int, size float32, pos rl.Vector2 /*, x, y float32*/) *SpeciesCohort {
+  coNum := len(s.Cohorts)
+  sco := SpeciesCohort{
+    Species: s,
+    CoName:  fmt.Sprintf("%s-%02d", s.Name, coNum),
+    Points:  nil,
+    QuadTree: nil,
+  }
+
+  // Generate points
   for i := 0; i < n; i++ {
     vel := rl.Vector2{}
     if s.QuasiType != "center" {
@@ -112,17 +176,22 @@ func (s *Species) MakeBigPointsAt(n int, size float32, pos rl.Vector2 /*, x, y f
     pt, _ := NewPointAtV(pos, vel)
     pt.Mass = size
     pt.r *= float32(math.Log10(float64(size * 10)))
-    s.integrate(pt)
+    sco.integrate(pt)
   }
+
+  // Add the cohort to the list of cohorts in Species
+  s.Cohorts[sco.CoName] = &sco
+
+  return &sco
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) integrate(pt *Point) *Point {
+func (sco *SpeciesCohort) integrate(pt *Point) *Point {
 
-  pt.Species = s
+  pt.SpeciesCo = sco
 
-  s.Points = append(s.Points, pt)
+  sco.Points = append(sco.Points, pt)
   return pt
 }
 
@@ -134,22 +203,96 @@ func (s *Species) InteractWith(other *Species, rules *Rules) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func UpdateAllSpecies(st *ComputeStats) {
-  for name, species := range allSpecies {
-    quadTree := NewQuadTree(0, 0, CurrentScreenWidth, CurrentScreenHeight, species.Color)
-    quadTree.addPoints(species.Points, st)
+func (sco *SpeciesCohort) getPoints(point *Point, rules *Rules) []*Point {
+  //rulesDistSq := rules.Radius * rules.Radius
+  //rulesSepDistSq := rules.SepRadius * rules.SepRadius
 
-    quadCount := quadTree.count()
-    specCount := len(species.Points)
-    if quadCount != specCount {
-      log.Panic("Wrong counts")
+  // #4 fastest
+  //var pts []*Point = nil
+  //ch := s.getPointsChan()
+  //for otherPt := range ch {
+  //  pts = append(pts, otherPt)
+  //}
+  //return pts
+
+  // #3 fastest, but carries the length with the slice
+  pts := make([]*Point, 0, len(sco.Points))
+
+  //qtree := speciesQuadTrees[sco.CoName]
+  qtree := sco.QuadTree
+  qtree.getPoints(point, rules, &pts)
+
+  //for _, otherPt := range s.Points {
+  // dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+  // pairDistSq := rl.Vector2LenSqr(dist)
+  //
+  // // Attraction
+  // if !TheGlobalRules.SkipAttractionRule {
+  //
+  //   if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
+  //     pts = append(pts, otherPt)
+  //   }
+  // }
+  // // Separation
+  // if !TheGlobalRules.SkipSeparationRule {
+  //
+  //   if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+  //     // We are too close
+  //     pts = append(pts, otherPt)
+  //   }
+  // }
+  //
+  //}
+  return pts
+
+  // #2 fastest (very close to #3, tho)
+  //pts := make([]*Point, len(s.Points))
+  //for i, otherPt := range s.Points {
+  // pts[i] = otherPt
+  //}
+  //return pts
+
+  // #1 fastest
+  //return s.Points
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (sco *SpeciesCohort) getPointsChan() chan *Point {
+  ch := make(chan *Point, 500)
+
+  go func() {
+    for _, pt := range sco.Points {
+      ch <- pt
     }
+    close(ch)
+  }()
 
-    speciesQuadTrees[name] = quadTree
+  return ch
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func UpdateAllSpecies(st *ComputeStats) {
+  for _, species := range allSpecies {
+    for _, sco := range species.Cohorts {
+      quadTree := NewQuadTree(0, 0, CurrentScreenWidth, CurrentScreenHeight, sco.Species.Color)
+      quadTree.addPoints(sco.Points, st)
+
+      quadCount := quadTree.count()
+      specCount := len(sco.Points)
+      if quadCount != specCount {
+        log.Panic("Wrong counts")
+      }
+
+      sco.QuadTree = quadTree
+    }
   }
 
   for _, species := range allSpecies {
-    species.Update(st)
+    for _, sco := range species.Cohorts {
+      sco.Update(st)
+    }
   }
 }
 
@@ -157,78 +300,158 @@ func UpdateAllSpecies(st *ComputeStats) {
 
 func DrawAllSpecies(st *ComputeStats) {
   for _, species := range allSpecies {
-    species.Draw(st)
+    for _, sco := range species.Cohorts {
+      sco.Draw(st)
+    }
   }
 
-  for _, tree := range speciesQuadTrees {
-    tree.Draw()
+  for _, species := range allSpecies {
+    for _, sco := range species.Cohorts {
+      sco.QuadTree.Draw()
+    }
   }
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) Update(st *ComputeStats) {
+func (sco *SpeciesCohort) Update(st *ComputeStats) {
   stats := ComputeStatsData{}
+  //s := sco.Species
 
-  for _, point := range s.Points {
+  for _, point := range sco.Points {
     // Give the point a chance to do its own update
     if point.Update(st) {
       continue
     }
 
-    for otherColor, rules := range s.Rules {
-      other := allSpecies[otherColor]
-      grav := rules.Attraction * TheGlobalRules.GravPerAttr
-      rulesDistSq := rules.Radius * rules.Radius
-      rulesSepDistSq := rules.SepRadius * rules.SepRadius
+    if TheGlobalRules.QuadTreeCmp {
+      for rulesColor, rules := range sco.Species.Rules {
+        for otherColor, species := range allSpecies {
 
-      // TODO: Make a Vector2
-      fx, fy := float32(0.0), float32(0.0)
+          // Only doing cohorts from species of the color named by the rule
+          if otherColor != rulesColor {
+            continue
+          }
 
-      // -------------- Loop over other group
-      for _, otherPt := range other.Points {
-        if point == otherPt {
-          continue
-        }
+          for _, other := range species.Cohorts {
+            //other := allSpeciesCohorts[otherColor]
+            grav := rules.Attraction * TheGlobalRules.GravPerAttr
 
-        fxOther, fyOther := float32(0.0), float32(0.0)
+            stats.Points += len(other.Points)
 
-        dist := rl.Vector2Subtract(point.pos, otherPt.pos)
-        pairDistSq := rl.Vector2LenSqr(dist)
+            // TODO: Make a Vector2
+            fx, fy := float32(0.0), float32(0.0)
 
-        // Attraction
-        if !TheGlobalRules.SkipAttractionRule {
+            // -------------- Loop over other group
+            for _, otherPt := range other.getPoints(point, rules) {
+              stats.PointsProc += 1
+              if point == otherPt {
+                continue
+              }
 
-          stats.Cmps += 1
-          if pairDistSq <= rulesDistSq && pairDistSq != 0.0 {
-            pairDist := float32(math.Sqrt(float64(pairDistSq)))
-            stats.Sqrts += 1
-            fxOther += otherPt.Mass * dist.X / pairDist
-            fyOther += otherPt.Mass * dist.Y / pairDist
+              // TODO: Make a Vector2
+              fxOther, fyOther := float32(0.0), float32(0.0)
+
+              dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+              pairDistSq := rl.Vector2LenSqr(dist)
+
+              // Attraction
+              if !TheGlobalRules.SkipAttractionRule {
+
+                stats.Cmps += 1
+                if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
+                  pairDist := float32(math.Sqrt(float64(pairDistSq)))
+                  stats.Sqrts += 1
+                  fxOther += otherPt.Mass * dist.X / pairDist
+                  fyOther += otherPt.Mass * dist.Y / pairDist
+                }
+              }
+
+              // Separation
+              if !TheGlobalRules.SkipSeparationRule {
+
+                stats.Cmps += 1
+                if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+                  // We are too close
+                  fxOther *= rules.SepFactor
+                  fyOther *= rules.SepFactor
+                }
+              }
+
+              fx += fxOther
+              fy += fyOther
+            }
+
+            point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
           }
         }
-
-        // Separation
-        if !TheGlobalRules.SkipSeparationRule {
-
-          stats.Cmps += 1
-          if pairDistSq <= rulesSepDistSq && rules.SepFactor != 1 {
-            // We are too close
-            fxOther *= rules.SepFactor
-            fyOther *= rules.SepFactor
-          }
-        }
-
-        fx += fxOther
-        fy += fyOther
       }
 
-      point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+    } else {
+      for rulesColor, rules := range sco.Species.Rules {
+        for otherColor, species := range allSpecies {
+
+          // Only doing cohorts from species of the color named by the rule
+          if otherColor != rulesColor {
+            continue
+          }
+
+          for _, other := range species.Cohorts {
+            //other := allSpeciesCohorts[otherColor]
+            grav := rules.Attraction * TheGlobalRules.GravPerAttr
+
+            // TODO: Make a Vector2
+            fx, fy := float32(0.0), float32(0.0)
+
+            // -------------- Loop over other group
+            for _, otherPt := range other.Points {
+              if point == otherPt {
+                continue
+              }
+
+              // TODO: Make a Vector2
+              fxOther, fyOther := float32(0.0), float32(0.0)
+
+              dist := rl.Vector2Subtract(point.pos, otherPt.pos)
+              pairDistSq := rl.Vector2LenSqr(dist)
+
+              // Attraction
+              if !TheGlobalRules.SkipAttractionRule {
+
+                stats.Cmps += 1
+                if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
+                  pairDist := float32(math.Sqrt(float64(pairDistSq)))
+                  stats.Sqrts += 1
+                  fxOther += otherPt.Mass * dist.X / pairDist
+                  fyOther += otherPt.Mass * dist.Y / pairDist
+                }
+              }
+
+              // Separation
+              if !TheGlobalRules.SkipSeparationRule {
+
+                stats.Cmps += 1
+                if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+                  // We are too close
+                  fxOther *= rules.SepFactor
+                  fyOther *= rules.SepFactor
+                }
+              }
+
+              fx += fxOther
+              fy += fyOther
+            }
+
+            point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+          }
+        }
+      }
     }
+
 
     // ---------- Finalize computations ----------
 
-    // TODO -- this calls sqrt
+    // TODO -- this calls sqrt, update stats
     clampV2(&point.vel, TheGlobalRules.MaxVelocity)
 
     // Update position
@@ -249,8 +472,8 @@ func (s *Species) Update(st *ComputeStats) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func (s *Species) Draw(st *ComputeStats) {
-  for _, point := range s.Points {
+func (sco *SpeciesCohort) Draw(st *ComputeStats) {
+  for _, point := range sco.Points {
     point.Draw()
   }
 }

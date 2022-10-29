@@ -3,9 +3,11 @@ package raygun
 type Rules struct {
   Attraction          float32
   Radius              float32
+  RadiusSq            float32
 
   SepFactor           float32
   SepRadius           float32
+  SepRadiusSq         float32
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -22,6 +24,13 @@ type GlobalRules struct {
 
   SkipAttractionRule  bool
   SkipSeparationRule  bool
+
+  QuadTreeCap         int
+
+  QuadTreeStrat       int
+  QuadTreeArea        float32
+
+  QuadTreeCmp         bool
 }
 var TheGlobalRules *GlobalRules = &GlobalRules{
   GravPerAttr: 1.0 / -500.0,
@@ -35,6 +44,15 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
 
   SkipAttractionRule: false,
   SkipSeparationRule: false,
+
+  QuadTreeCap: 100,
+
+  //QuadTreeStrat: 0,         /* 0==preferAppend, 1==smallArea(preferSplit)*/
+  //QuadTreeArea: -1.0,
+  QuadTreeStrat: 1,
+  QuadTreeArea: 10.0 * 10.0,
+
+  QuadTreeCmp:        true,
 }
 
 func MaxInitialVelocity() float32 {
@@ -54,6 +72,7 @@ func NewRules(a, r float32) *Rules {
   return &Rules{
     Attraction: a,
     Radius:     r,
+    RadiusSq:   r*r,
     SepFactor:  1,
   }
 }
@@ -64,8 +83,10 @@ func NewRulesWithSep(a, r, s, sr float32) *Rules {
   return &Rules{
     Attraction: a,
     Radius:     r,
+    RadiusSq:   r*r,
     SepFactor:  s,
     SepRadius:  sr,
+    SepRadiusSq: sr*sr,
   }
 }
 
