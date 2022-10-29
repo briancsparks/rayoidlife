@@ -12,7 +12,7 @@
 ### Next
 
 - chan of slice of points, not chan of points
-- Cohort numbers (not just colors)
+- ~~Cohort numbers (not just colors)~~
 - OSD
 - The dim(0) idea
 
