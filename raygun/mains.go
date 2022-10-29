@@ -93,7 +93,7 @@ func MainTwo() {
   rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
-  rl.SetTargetFPS(60)
+  //rl.SetTargetFPS(60)
 
 
   stats := StartComputeStatsAgent()

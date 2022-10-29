@@ -1,5 +1,13 @@
 package raygun
 
+type SingleRule struct {
+  Factor              float32
+  Radius              float32
+  RadiusSq            float32
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
 type Rules struct {
   Attraction          float32
   Radius              float32
@@ -8,6 +16,8 @@ type Rules struct {
   SepFactor           float32
   SepRadius           float32
   SepRadiusSq         float32
+
+  ThemRules           map[string]*SingleRule
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -39,8 +49,10 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
 
   SelfAttractionDef: 40.0,
   SelfRadiusDef: 180.0,
-  SelfSepFactorDef: -3,
-  SelfSepRadiusDef:  30,
+  //SelfSepFactorDef: -3,
+  //SelfSepRadiusDef:  30,
+  SelfSepFactorDef: -300,
+  SelfSepRadiusDef:  8,
 
   SkipAttractionRule: false,
   SkipSeparationRule: false,
@@ -64,31 +76,59 @@ func MaxInitialVelocity() float32 {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-var Ignore *Rules = &Rules{Attraction: 0, Radius: 0}
-
-// -------------------------------------------------------------------------------------------------------------------
-
 func NewRules(a, r float32) *Rules {
-  return &Rules{
-    Attraction: a,
-    Radius:     r,
-    RadiusSq:   r*r,
-    SepFactor:  1,
+  rules := &Rules{
+    Attraction:  a,
+    Radius:      r,
+    RadiusSq:    r * r,
+    SepFactor:   1,
+    ThemRules:   map[string]*SingleRule{},
   }
+
+  rules.ThemRules["attraction"] = &SingleRule{
+    Factor:   a,
+    Radius:   r,
+    RadiusSq: r * r,
+  }
+
+  rules.ThemRules["separation"] = &SingleRule{
+    Factor:   1,
+  }
+
+  return rules
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 func NewRulesWithSep(a, r, s, sr float32) *Rules {
-  return &Rules{
+  rules := &Rules{
     Attraction: a,
     Radius:     r,
     RadiusSq:   r*r,
     SepFactor:  s,
     SepRadius:  sr,
     SepRadiusSq: sr*sr,
+    ThemRules:   map[string]*SingleRule{},
   }
+
+  rules.ThemRules["attraction"] = &SingleRule{
+    Factor:   a,
+    Radius:   r,
+    RadiusSq: r * r,
+  }
+
+  rules.ThemRules["separation"] = &SingleRule{
+    Factor:   s,
+    Radius:   sr,
+    RadiusSq: sr * sr,
+  }
+
+  return rules
 }
+
+// -------------------------------------------------------------------------------------------------------------------
+
+var Ignore *Rules = NewRules(0, 0)
 
 // -------------------------------------------------------------------------------------------------------------------
 

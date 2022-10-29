@@ -19,6 +19,7 @@ type HQuadTree struct {
 
   aggregated  *Point
 
+  Cohort  *SpeciesCohort
   Points []*Point
   Color   color.RGBA
 }
@@ -32,18 +33,20 @@ type VQuadTree struct {
 
   aggregated  *Point
 
+  Cohort  *SpeciesCohort
   Points []*Point
   Color   color.RGBA
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewQuadTree(l, t, r, b float32, c color.RGBA) *HQuadTree {
+func NewQuadTree(l, t, r, b float32, cohort *SpeciesCohort, c color.RGBA) *HQuadTree {
   vtree := &VQuadTree{
     top:    t,
     bottom: b,
     isA:    true,
     Color:  c,
+    Cohort: cohort,
   }
   //_=vtree
 
@@ -55,6 +58,7 @@ func NewQuadTree(l, t, r, b float32, c color.RGBA) *HQuadTree {
     bTree: &VQuadTree{}, /* t,b are zero. has no area, will contain no points */
     isA:   true,
     Color: c,
+    Cohort: cohort,
   }
 
   htree.aTree.parent = htree
@@ -144,6 +148,7 @@ func (t *VQuadTree) split(h *HQuadTree) (*VQuadTree, *VQuadTree) {
     parent: h,
     isA:    true,
     Color:  t.Color,
+    Cohort: t.Cohort,
   }
 
   bottom := &VQuadTree{
@@ -151,6 +156,7 @@ func (t *VQuadTree) split(h *HQuadTree) (*VQuadTree, *VQuadTree) {
     bottom: t.bottom,
     parent: h,
     Color:  t.Color,
+    Cohort: t.Cohort,
   }
 
   return top, bottom
@@ -208,8 +214,11 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
       t.aggregated, _ = NewPointAt(rl.Vector2{
         X: (t.parent.left + t.parent.right) / 2,
         Y: (t.bottom + t.top) / 2,
-      })
+      },t.Cohort, 66664)
+      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
       t.aggregated.Mass = t.totalMass()
+      t.aggregated.Count = t.count()
+      //t.aggregated.Id = 66664
     }
     dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
     all = all && (dist <= rules.Radius)
@@ -227,6 +236,61 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
   if t.aTree != nil {
     t.aTree.getPoints(point, rules, pts)
     t.bTree.getPoints(point, rules, pts)
+  }
+
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *VQuadTree) getPoints2(point *Point, rule *SingleRule, rulesz *Rules, pts *[]*Point) {
+
+  all := false
+  if t.area() <= TheGlobalRules.QuadTreeArea {
+    all = true
+  }
+
+  // If we are 'A' (top), this whole tree is excluded if the point+r is less than our left
+  if t.isA {
+    if point.pos.Y + rule.Radius < t.top {
+      return
+    }
+
+    all = all && (point.pos.Y + rule.Radius >= t.bottom)
+  } else {
+    if point.pos.Y - rule.Radius > t.bottom {
+      return
+    }
+
+    all = all && (point.pos.Y - rule.Radius <= t.top)
+  }
+
+  if all {
+    if t.aggregated == nil {
+      t.aggregated, _ = NewPointAt(rl.Vector2{
+        X: (t.parent.left + t.parent.right) / 2,
+        Y: (t.bottom + t.top) / 2,
+      },t.Cohort, 66660)
+      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+      t.aggregated.Mass = t.totalMass()
+      t.aggregated.Count = t.count()
+      //t.aggregated.Id = 66660
+    }
+    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+    all = all && (dist <= rule.Radius)
+  }
+
+  if all {
+    *pts = append(*pts, t.aggregated)
+    return
+  }
+
+  for _, p := range t.Points {
+    *pts = append(*pts, p)
+  }
+
+  if t.aTree != nil {
+    t.aTree.getPoints2(point, rule, rulesz, pts)
+    t.bTree.getPoints2(point, rule, rulesz, pts)
   }
 
 }
@@ -327,6 +391,7 @@ func (t *HQuadTree) split(v *VQuadTree) (*HQuadTree, *HQuadTree) {
     parent: v,
     isA:    true,
     Color:  t.Color,
+    Cohort: t.Cohort,
   }
 
   right := &HQuadTree{
@@ -334,6 +399,7 @@ func (t *HQuadTree) split(v *VQuadTree) (*HQuadTree, *HQuadTree) {
     right:  t.right,
     parent: v,
     Color:  t.Color,
+    Cohort: t.Cohort,
   }
 
   return left, right
@@ -390,8 +456,11 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
       t.aggregated, _ = NewPointAt(rl.Vector2{
         X: (t.left + t.right) / 2,
         Y: (t.parent.bottom + t.parent.top) / 2,
-      })
+      },t.Cohort, 66665)
+      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
       t.aggregated.Mass = t.totalMass()
+      t.aggregated.Count = t.count()
+      //t.aggregated.Id = 66665
     }
     dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
     all = all && (dist <= rules.Radius)
@@ -409,6 +478,60 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
   if t.aTree != nil {
     t.aTree.getPoints(point, rules, pts)
     t.bTree.getPoints(point, rules, pts)
+  }
+}
+
+// -------------------------------------------------------------------------------------------------------------------
+
+func (t *HQuadTree) getPoints2(point *Point, rule *SingleRule, rulesz *Rules, pts *[]*Point) {
+
+  all := false
+  if t.area() <= TheGlobalRules.QuadTreeArea {
+    all = true
+  }
+
+  // If we are 'A' (left), this whole tree is excluded if the point+r is less than our left
+  if t.isA {
+    if point.pos.X + rule.Radius < t.left {
+      return
+    }
+
+    all = all && (point.pos.X + rule.Radius >= t.right)
+  } else {
+    if point.pos.X - rule.Radius > t.right {
+      return
+    }
+
+    all = all && (point.pos.X - rule.Radius <= t.left)
+  }
+
+  if all {
+    if t.aggregated == nil {
+      t.aggregated, _ = NewPointAt(rl.Vector2{
+        X: (t.left + t.right) / 2,
+        Y: (t.parent.bottom + t.parent.top) / 2,
+      },t.Cohort, 66661)
+      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+      t.aggregated.Mass = t.totalMass()
+      t.aggregated.Count = t.count()
+      //t.aggregated.Id = 66661
+    }
+    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+    all = all && (dist <= rule.Radius)
+  }
+
+  if all {
+    *pts = append(*pts, t.aggregated)
+    return
+  }
+
+  for _, p := range t.Points {
+    *pts = append(*pts, p)
+  }
+
+  if t.aTree != nil {
+    t.aTree.getPoints2(point, rule, rulesz, pts)
+    t.bTree.getPoints2(point, rule, rulesz, pts)
   }
 }
 

@@ -99,12 +99,14 @@ func clamped(x *float32, a, b float32) bool {
 func clampxy(x, y *float32, maxLen float32) {
   maxLenSq := maxLen * maxLen
   vSq := *x * *x + *y * *y
+  multiplier := float32(1.0)
   if vSq > maxLenSq {
     vLen := float32(math.Sqrt(float64(vSq)))
-
-    *x /= vLen
-    *y /= vLen
+    multiplier = maxLen / vLen
   }
+
+  *x *= multiplier
+  *y *= multiplier
 }
 
 // -------------------------------------------------------------------------------------------------------------------

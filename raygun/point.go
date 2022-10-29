@@ -9,17 +9,27 @@ type Point struct {
   r           float32
   Mass        float32
 
-  SpeciesCo *SpeciesCohort
+  Count       int
+
+  Cohort *SpeciesCohort
+  CoName  string
+  Id     int
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
+func NewPointAtV(pos, vel rl.Vector2, sco *SpeciesCohort, id int) (*Point, error) {
   pt := Point{
     pos:  pos,
     vel:  vel,
     r:    6,
     Mass: 1,
+    Id:   id,
+    Cohort: sco,
+  }
+
+  if sco != nil {
+    pt.CoName = sco.CoName
   }
 
   return &pt, nil
@@ -27,11 +37,18 @@ func NewPointAtV(pos, vel rl.Vector2) (*Point, error) {
 
 // -------------------------------------------------------------------------------------------------------------------
 
-func NewPointAt(pos rl.Vector2) (*Point, error) {
+func NewPointAt(pos rl.Vector2, sco *SpeciesCohort, id int) (*Point, error) {
+
   pt := Point{
     pos:  pos,
     r:    1,
     Mass: 1,
+    Id:   id,
+    Cohort: sco,
+  }
+
+  if sco != nil {
+    pt.CoName = sco.CoName
   }
 
   return &pt, nil
@@ -47,8 +64,8 @@ func (pt *Point) Update(st *ComputeStats) bool {
 // -------------------------------------------------------------------------------------------------------------------
 
 func (pt *Point) Draw() {
-  if pt.SpeciesCo.Species.QuasiType == "center" {
+  if pt.Cohort.Species.QuasiType == "center" {
     rl.DrawCircleV(pt.pos, pt.r + 3, rl.Black)
   }
-  rl.DrawCircleV(pt.pos, pt.r, pt.SpeciesCo.Species.Color)
+  rl.DrawCircleV(pt.pos, pt.r, pt.Cohort.Species.Color)
 }
