@@ -51,7 +51,7 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
   SelfRadiusDef: 180.0,
   //SelfSepFactorDef: -3,
   //SelfSepRadiusDef:  30,
-  SelfSepFactorDef: -300,
+  SelfSepFactorDef: -300,           /* TODO: Seems too big */
   SelfSepRadiusDef:  8,
 
   SkipAttractionRule: false,

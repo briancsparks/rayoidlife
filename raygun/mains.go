@@ -56,6 +56,9 @@ func MainTwo() {
   center, _ := NewQuasiSpecies("center")
   center.MakeBigPointsAt(1, 100, CurrentScreenCenter)
 
+  theCenterPt := center.Cohorts["center-00"].Points[0]
+  _=theCenterPt
+
   // Colors SpeciesCohort
   redSpecies, _     := NewSpecies("red", rl.Red)
   greenSpecies, _   := NewSpecies("green", rl.Green)
@@ -82,9 +85,9 @@ func MainTwo() {
   redSpecies.InteractWith(whiteSpecies, NewRules(100.0, 288 /*float32(CurrentScreenRadius) / 12*/)) // 288
 
   blueSpecies.InteractWith(redSpecies, NewRules(-10.0, 175.0))
-  blueSpecies.InteractWith(whiteSpecies, Likes(400))
+  blueSpecies.InteractWith(whiteSpecies, NewRules(40.0, 400))
 
-  whiteSpecies.InteractWith(robotSpecies, Friendly(float32(CurrentScreenRadius) / 12))
+  whiteSpecies.InteractWith(robotSpecies, NewRules(10.0, float32(CurrentScreenRadius) / 12))
 
   robotSpecies.InteractWith(robotSpecies, Ignore)
   robotSpecies.InteractWith(center, NewRules(1.0, CurrentScreenRadius))

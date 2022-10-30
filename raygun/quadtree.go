@@ -210,23 +210,27 @@ func (t *VQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
   }
 
   if all {
-    if t.aggregated == nil {
-      t.aggregated, _ = NewPointAt(rl.Vector2{
-        X: (t.parent.left + t.parent.right) / 2,
-        Y: (t.bottom + t.top) / 2,
-      },t.Cohort, 66664)
-      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
-      t.aggregated.Mass = t.totalMass()
-      t.aggregated.Count = t.count()
-      //t.aggregated.Id = 66664
+    count := t.count()
+    all = count > 1
+    if count > 1 {
+      if t.aggregated == nil {
+        t.aggregated, _ = NewPointAt(rl.Vector2{
+          X: (t.parent.left + t.parent.right) / 2,
+          Y: (t.bottom + t.top) / 2,
+        },t.Cohort, 66664)
+        //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+        t.aggregated.Mass = t.totalMass()
+        t.aggregated.Count = count
+        //t.aggregated.Id = 66664
+      }
+      dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+      all = all && (dist <= rules.Radius)
     }
-    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
-    all = all && (dist <= rules.Radius)
   }
 
   if all {
-    *pts = append(*pts, t.aggregated)
-    return
+   *pts = append(*pts, t.aggregated)
+   return
   }
 
   for _, p := range t.Points {
@@ -265,23 +269,27 @@ func (t *VQuadTree) getPoints2(point *Point, rule *SingleRule, rulesz *Rules, pt
   }
 
   if all {
-    if t.aggregated == nil {
-      t.aggregated, _ = NewPointAt(rl.Vector2{
-        X: (t.parent.left + t.parent.right) / 2,
-        Y: (t.bottom + t.top) / 2,
-      },t.Cohort, 66660)
-      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
-      t.aggregated.Mass = t.totalMass()
-      t.aggregated.Count = t.count()
-      //t.aggregated.Id = 66660
+    count := t.count()
+    all = count > 1
+    if count > 1 {
+      if t.aggregated == nil {
+        t.aggregated, _ = NewPointAt(rl.Vector2{
+          X: (t.parent.left + t.parent.right) / 2,
+          Y: (t.bottom + t.top) / 2,
+        },t.Cohort, 66660)
+        //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+        t.aggregated.Mass = t.totalMass()
+        t.aggregated.Count = count
+        //t.aggregated.Id = 66660
+      }
+      dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+      all = all && (dist <= rule.Radius)
     }
-    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
-    all = all && (dist <= rule.Radius)
   }
 
   if all {
-    *pts = append(*pts, t.aggregated)
-    return
+   *pts = append(*pts, t.aggregated)
+   return
   }
 
   for _, p := range t.Points {
@@ -452,23 +460,27 @@ func (t *HQuadTree) getPoints(point *Point, rules *Rules, pts *[]*Point) {
   }
 
   if all {
-    if t.aggregated == nil {
-      t.aggregated, _ = NewPointAt(rl.Vector2{
-        X: (t.left + t.right) / 2,
-        Y: (t.parent.bottom + t.parent.top) / 2,
-      },t.Cohort, 66665)
-      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
-      t.aggregated.Mass = t.totalMass()
-      t.aggregated.Count = t.count()
-      //t.aggregated.Id = 66665
+    count := t.count()
+    all = count > 1
+    if count > 1 {
+      if t.aggregated == nil {
+        t.aggregated, _ = NewPointAt(rl.Vector2{
+          X: (t.left + t.right) / 2,
+          Y: (t.parent.bottom + t.parent.top) / 2,
+        },t.Cohort, 66665)
+        //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+        t.aggregated.Mass = t.totalMass()
+        t.aggregated.Count = count
+        //t.aggregated.Id = 66665
+      }
+      dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+      all = all && (dist <= rules.Radius)
     }
-    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
-    all = all && (dist <= rules.Radius)
   }
 
   if all {
-    *pts = append(*pts, t.aggregated)
-    return
+   *pts = append(*pts, t.aggregated)
+   return
   }
 
   for _, p := range t.Points {
@@ -506,23 +518,27 @@ func (t *HQuadTree) getPoints2(point *Point, rule *SingleRule, rulesz *Rules, pt
   }
 
   if all {
-    if t.aggregated == nil {
-      t.aggregated, _ = NewPointAt(rl.Vector2{
-        X: (t.left + t.right) / 2,
-        Y: (t.parent.bottom + t.parent.top) / 2,
-      },t.Cohort, 66661)
-      //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
-      t.aggregated.Mass = t.totalMass()
-      t.aggregated.Count = t.count()
-      //t.aggregated.Id = 66661
+    count := t.count()
+    all = count > 1
+    if count > 1 {
+      if t.aggregated == nil {
+        t.aggregated, _ = NewPointAt(rl.Vector2{
+          X: (t.left + t.right) / 2,
+          Y: (t.parent.bottom + t.parent.top) / 2,
+        },t.Cohort, 66661)
+        //t.aggregated.Mass = maxFloat32(t.totalMass(), 1)
+        t.aggregated.Mass = t.totalMass()
+        t.aggregated.Count = count
+        //t.aggregated.Id = 66661
+      }
+      dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
+      all = all && (dist <= rule.Radius)
     }
-    dist := rl.Vector2Distance(point.pos, t.aggregated.pos)
-    all = all && (dist <= rule.Radius)
   }
 
   if all {
-    *pts = append(*pts, t.aggregated)
-    return
+   *pts = append(*pts, t.aggregated)
+   return
   }
 
   for _, p := range t.Points {

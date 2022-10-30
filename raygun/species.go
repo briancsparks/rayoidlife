@@ -11,22 +11,22 @@ import (
 // -------------------------------------------------------------------------------------------------------------------
 
 type SpeciesCohort struct {
-  Species *Species
-  CoName  string
-  Points  []*Point
-  QuadTree  *HQuadTree
+  Species     *Species
+  CoName      string
+  Points      []*Point
+  QuadTree    *HQuadTree
 }
 
 // -------------------------------------------------------------------------------------------------------------------
 
 type Species struct {
-  Name    string
-  Color   color.RGBA
+  Name      string
+  Color     color.RGBA
   Cohorts   map[string]*SpeciesCohort
 
   QuasiType string
 
-  Rules   map[string]*Rules
+  Rules     map[string]*Rules
 }
 
 // -------------------------------------------------------------------------------------------------------------------
@@ -343,7 +343,7 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
         sco.getCohorts(func(rules *Rules, species *Species, otherCohort *SpeciesCohort, color string) {
           rule := rules.ThemRules["separation"]
-          if rule.Radius <= 0 || rule.Factor <= 0 {
+          if rule.Radius <= 0 /*|| rule.Factor <= 0*/ {
             return
           }
 
@@ -359,12 +359,16 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
           for _, otherCohortPoint := range otherCohortSepPoints {
             stats.PointsProc += 1
+            // TODO: put back
             if point == otherCohortPoint {
-              continue
+              wewe := 10
+              _=wewe
+              //continue
             }
-            if otherCohortPoint.Mass <= 0 {
-              continue
-            }
+            // TODO: put back
+            //if otherCohortPoint.Mass <= 0 {
+            //  continue
+            //}
 
             // TODO: Make a Vector2
             fxOther, fyOther := float32(0.0), float32(0.0)
@@ -374,14 +378,17 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
             // Separation
             stats.Cmps += 1
-            if pairDistSq <= rule.RadiusSq /*&& rule.Factor != 1*/ {
+            if pairDistSq != 0 && pairDistSq <= rule.RadiusSq /*&& rule.Factor != 1*/ {
               // We are too close
-              totalSepPoints += 1
 
               pairDist := float32(math.Sqrt(float64(pairDistSq)))
               stats.Sqrts += 1
-              fxOther += (otherCohortPoint.Mass * dist.X / pairDist) * rule.Factor
-              fyOther += (otherCohortPoint.Mass * dist.Y / pairDist) * rule.Factor
+              if pairDist != 0 {
+                totalSepPoints += 1
+
+                fxOther += (otherCohortPoint.Mass * dist.X / pairDist) * rule.Factor
+                fyOther += (otherCohortPoint.Mass * dist.Y / pairDist) * rule.Factor
+              }
             }
 
             fx += fxOther
@@ -394,12 +401,15 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
       if totalSepPoints <= 0 {
         for rulesColor, rules := range sco.Species.Rules {
+          _=rulesColor
           grav := rules.Attraction * TheGlobalRules.GravPerAttr
-          if rules.Attraction == 0 {
-            continue
-          }
+          // TODO: put back
+          //if rules.Attraction == 0 {
+          //  continue
+          //}
 
           for otherColor, species := range allSpecies {
+            _=otherColor
 
             // Only doing cohorts from species of the color named by the rule
             if otherColor != rulesColor {
@@ -441,12 +451,12 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
                 // Separation
                 if !TheGlobalRules.SkipSeparationRule {
 
-                  stats.Cmps += 1
-                  if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
-                    // We are too close
-                    fxOther *= rules.SepFactor
-                    fyOther *= rules.SepFactor
-                  }
+                 stats.Cmps += 1
+                 if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+                   // We are too close
+                   fxOther *= rules.SepFactor
+                   fyOther *= rules.SepFactor
+                 }
                 }
 
                 fx += fxOther

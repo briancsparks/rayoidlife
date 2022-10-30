@@ -56,7 +56,7 @@ func randVector2(maxLen float32) rl.Vector2 {
 // -------------------------------------------------------------------------------------------------------------------
 
 func xy(deg, len float32) (float32, float32) {
-  x, y := math.Sincos(float64(deg))
+  y, x := math.Sincos(float64(deg))
   return float32(x * float64(len)), float32(y * float64(len))
 }
 
@@ -97,6 +97,12 @@ func clamped(x *float32, a, b float32) bool {
 // -------------------------------------------------------------------------------------------------------------------
 
 func clampxy(x, y *float32, maxLen float32) {
+  if *x == 0 && *y == 0 {
+    jjj := 55
+    _=jjj
+    //return
+  }
+
   maxLenSq := maxLen * maxLen
   vSq := *x * *x + *y * *y
   multiplier := float32(1.0)
