@@ -336,12 +336,18 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
       continue
     }
 
+    origVel := point.vel
+    _=origVel
+    fearPoints := 0
+
     if TheGlobalRules.QuadTreeCmp {
       // First, evaluate the separation rules. If there is separation, do not do attraction
-      totalSepPoints := 0
-      if !TheGlobalRules.SkipSeparationRule {
+      if !TheGlobalRules.SkipNewSepRules {
 
+        // Do all separation rules - if we are influenced by ANY other point, skip attraction rules
         sco.getCohorts(func(rules *Rules, species *Species, otherCohort *SpeciesCohort, color string) {
+          stats.Points += len(otherCohort.Points)
+
           rule := rules.ThemRules["separation"]
           if rule.Radius <= 0 /*|| rule.Factor <= 0*/ {
             return
@@ -349,26 +355,26 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
           pts := make([]*Point, 0, len(otherCohort.Points))
           otherCohortSepPoints := otherCohort.getPoints2(pts, point, rule, rules)
-          //totalSepPoints += len(otherCohortSepPoints)
           grav := rule.Factor * TheGlobalRules.GravPerAttr
-
-          stats.Points += len(otherCohort.Points)
 
           // TODO: Make a Vector2
           fx, fy := float32(0.0), float32(0.0)
 
-          for _, otherCohortPoint := range otherCohortSepPoints {
-            stats.PointsProc += 1
-            // TODO: put back
+          for iCohort, otherCohortPoint := range otherCohortSepPoints {
+            _=iCohort
+
             if point == otherCohortPoint {
               wewe := 10
               _=wewe
-              //continue
+              continue
             }
+            stats.PointsProc += 1
+
             // TODO: put back
             //if otherCohortPoint.Mass <= 0 {
             //  continue
             //}
+            stats.PointsProcHeavy += 1
 
             // TODO: Make a Vector2
             fxOther, fyOther := float32(0.0), float32(0.0)
@@ -384,7 +390,12 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
               pairDist := float32(math.Sqrt(float64(pairDistSq)))
               stats.Sqrts += 1
               if pairDist != 0 {
-                totalSepPoints += 1
+                fearPoints += 1
+
+                //// Kill all normal (attractive) momentum when we have to separate
+                //if fearPoints == 1 {
+                //  point.vel = rl.Vector2{}
+                //}
 
                 fxOther += (otherCohortPoint.Mass * dist.X / pairDist) * rule.Factor
                 fyOther += (otherCohortPoint.Mass * dist.Y / pairDist) * rule.Factor
@@ -397,73 +408,136 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
           point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
         })
-      }
 
-      if totalSepPoints <= 0 {
-        for rulesColor, rules := range sco.Species.Rules {
-          _=rulesColor
-          grav := rules.Attraction * TheGlobalRules.GravPerAttr
-          // TODO: put back
-          //if rules.Attraction == 0 {
-          //  continue
-          //}
+        // Do attraction rules only if we are not separating
+        if fearPoints <= 0 {
+          sco.getCohorts(func(rules *Rules, species *Species, otherCohort *SpeciesCohort, color string) {
+            stats.Points += len(otherCohort.Points)
 
-          for otherColor, species := range allSpecies {
-            _=otherColor
-
-            // Only doing cohorts from species of the color named by the rule
-            if otherColor != rulesColor {
-              continue
+            rule := rules.ThemRules["attraction"]
+            if rule.Radius <= 0 /*|| rule.Factor <= 0*/ {
+              return
             }
 
-            for _, otherCohort := range species.Cohorts {
+            pts := make([]*Point, 0, len(otherCohort.Points))
+            otherCohortAttrPoints := otherCohort.getPoints2(pts, point, rule, rules)
+            grav := rule.Factor * TheGlobalRules.GravPerAttr
 
-              stats.Points += len(otherCohort.Points)
+            // TODO: Make a Vector2
+            fx, fy := float32(0.0), float32(0.0)
+
+            for iCohort, otherCohortPoint := range otherCohortAttrPoints {
+              _=iCohort
+
+              if point == otherCohortPoint {
+                wewe := 10
+                _=wewe
+                continue
+              }
+              stats.PointsProc += 1
+
+              // TODO: put back
+              //if otherCohortPoint.Mass <= 0 {
+              //  continue
+              //}
+              stats.PointsProcHeavy += 1
 
               // TODO: Make a Vector2
-              fx, fy := float32(0.0), float32(0.0)
+              fxOther, fyOther := float32(0.0), float32(0.0)
 
-              // -------------- Loop over otherCohort group
-              for _, otherCohortPoint := range otherCohort.getPoints(point, rules) {
-                stats.PointsProc += 1
-                if point == otherCohortPoint {
-                  continue
+              dist := rl.Vector2Subtract(point.pos, otherCohortPoint.pos)
+              pairDistSq := rl.Vector2LenSqr(dist)
+
+              // Separation
+              stats.Cmps += 1
+              if pairDistSq != 0 && pairDistSq <= rule.RadiusSq /*&& rule.Factor != 1*/ {
+                // We are too close
+
+                pairDist := float32(math.Sqrt(float64(pairDistSq)))
+                stats.Sqrts += 1
+                if pairDist != 0 {
+
+                  fxOther += (otherCohortPoint.Mass * dist.X / pairDist) * rule.Factor
+                  fyOther += (otherCohortPoint.Mass * dist.Y / pairDist) * rule.Factor
                 }
-
-                // TODO: Make a Vector2
-                fxOther, fyOther := float32(0.0), float32(0.0)
-
-                dist := rl.Vector2Subtract(point.pos, otherCohortPoint.pos)
-                pairDistSq := rl.Vector2LenSqr(dist)
-
-                // Attraction
-                if !TheGlobalRules.SkipAttractionRule {
-
-                  stats.Cmps += 1
-                  if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
-                    pairDist := float32(math.Sqrt(float64(pairDistSq)))
-                    stats.Sqrts += 1
-                    fxOther += otherCohortPoint.Mass * dist.X / pairDist
-                    fyOther += otherCohortPoint.Mass * dist.Y / pairDist
-                  }
-                }
-
-                // Separation
-                if !TheGlobalRules.SkipSeparationRule {
-
-                 stats.Cmps += 1
-                 if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
-                   // We are too close
-                   fxOther *= rules.SepFactor
-                   fyOther *= rules.SepFactor
-                 }
-                }
-
-                fx += fxOther
-                fy += fyOther
               }
 
-              point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+              fx += fxOther
+              fy += fyOther
+            }
+
+            point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+          })
+        }
+      }
+
+      if TheGlobalRules.SkipNewSepRules {
+        if fearPoints <= 0 {
+          for rulesColor, rules := range sco.Species.Rules {
+            _=rulesColor
+            grav := rules.Attraction * TheGlobalRules.GravPerAttr
+            // TODO: put back
+            //if rules.Attraction == 0 {
+            //  continue
+            //}
+
+            for otherColor, species := range allSpecies {
+              _=otherColor
+
+              // Only doing cohorts from species of the color named by the rule
+              if otherColor != rulesColor {
+                continue
+              }
+
+              for _, otherCohort := range species.Cohorts {
+
+                stats.Points += len(otherCohort.Points)
+
+                // TODO: Make a Vector2
+                fx, fy := float32(0.0), float32(0.0)
+
+                // -------------- Loop over otherCohort group
+                for _, otherCohortPoint := range otherCohort.getPoints(point, rules) {
+                  stats.PointsProc += 1
+                  if point == otherCohortPoint {
+                    continue
+                  }
+
+                  // TODO: Make a Vector2
+                  fxOther, fyOther := float32(0.0), float32(0.0)
+
+                  dist := rl.Vector2Subtract(point.pos, otherCohortPoint.pos)
+                  pairDistSq := rl.Vector2LenSqr(dist)
+
+                  // Attraction
+                  if !TheGlobalRules.SkipAttractionRule {
+
+                    stats.Cmps += 1
+                    if pairDistSq <= rules.RadiusSq && pairDistSq != 0.0 {
+                      pairDist := float32(math.Sqrt(float64(pairDistSq)))
+                      stats.Sqrts += 1
+                      fxOther += otherCohortPoint.Mass * dist.X / pairDist
+                      fyOther += otherCohortPoint.Mass * dist.Y / pairDist
+                    }
+                  }
+
+                  // Separation
+                  if !TheGlobalRules.SkipSeparationRule {
+
+                    stats.Cmps += 1
+                    if pairDistSq <= rules.SepRadiusSq && rules.SepFactor != 1 {
+                      // We are too close
+                      fxOther *= rules.SepFactor
+                      fyOther *= rules.SepFactor
+                    }
+                  }
+
+                  fx += fxOther
+                  fy += fyOther
+                }
+
+                point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
+              }
             }
           }
         }
@@ -540,6 +614,11 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
     // Update position
     point.pos = rl.Vector2Add(point.pos, point.vel)
+
+    //// Restore original vel?
+    //if fearPoints > 0 {
+    //  point.vel = origVel
+    //}
 
     // Bounce off edges
     if clamped(&point.pos.X, 0, CurrentScreenWidth) {

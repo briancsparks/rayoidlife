@@ -82,7 +82,7 @@ func MainTwo() {
   // ---------- Interaction Rules ----------
 
   redSpecies.InteractWith(blueSpecies, NewRules(-300.0, 200.0))
-  redSpecies.InteractWith(whiteSpecies, NewRules(100.0, 288 /*float32(CurrentScreenRadius) / 12*/)) // 288
+  redSpecies.InteractWith(whiteSpecies, NewRules(200.0, 288 /*float32(CurrentScreenRadius) / 12*/)) // 288
 
   blueSpecies.InteractWith(redSpecies, NewRules(-10.0, 175.0))
   blueSpecies.InteractWith(whiteSpecies, NewRules(40.0, 400))
@@ -115,8 +115,11 @@ func MainTwo() {
 
     st := stats.GetData()
     procPercent := float32(st.PointsProc) / float32(st.Points)
-    rl.SetWindowTitle(fmt.Sprintf("FPS: %f, sqrts: %08d, cmps: %08d #Pts: %08d/%08d (%f)",
-      rl.GetFPS(), st.Sqrts, st.Cmps, st.PointsProc, st.Points, procPercent))
+    heavyProcPercent := float32(st.PointsProcHeavy) / float32(st.Points)
+    rl.SetWindowTitle(fmt.Sprintf("FPS: %f, sqrts: %08d, cmps: %08d #Pts: %08d/%08d (%f) #HPts: %08d/%08d (%f)",
+      rl.GetFPS(), st.Sqrts, st.Cmps,
+      st.PointsProc, st.Points, procPercent,
+      st.PointsProcHeavy, st.Points, heavyProcPercent))
 
     //rl.EndMode2D()
     rl.EndDrawing()

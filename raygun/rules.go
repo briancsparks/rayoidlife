@@ -34,6 +34,7 @@ type GlobalRules struct {
 
   SkipAttractionRule  bool
   SkipSeparationRule  bool
+  SkipNewSepRules     bool
 
   QuadTreeCap         int
 
@@ -51,11 +52,14 @@ var TheGlobalRules *GlobalRules = &GlobalRules{
   SelfRadiusDef: 180.0,
   //SelfSepFactorDef: -3,
   //SelfSepRadiusDef:  30,
-  SelfSepFactorDef: -300,           /* TODO: Seems too big */
+  //SelfSepFactorDef: -300,           /* TODO: Seems too big */
+  //SelfSepRadiusDef:  8,
+  SelfSepFactorDef: -40,
   SelfSepRadiusDef:  8,
 
   SkipAttractionRule: false,
   SkipSeparationRule: false,
+  SkipNewSepRules:    false,
 
   QuadTreeCap: 100,
 
