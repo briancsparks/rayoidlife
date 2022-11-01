@@ -119,8 +119,8 @@ func MainTwo() {
 
   // ---------- Interaction Rules ----------
 
-  redSpecies.InteractWith(blueSpecies, NewRules(-1000.0, 400.0))
-  redSpecies.InteractWith(whiteSpecies, NewRules(100.0, 500 /*float32(CurrentScreenRadius) / 12*/)) // 288
+  redSpecies.InteractWith(blueSpecies, NewRules(-17.5, 200))
+  redSpecies.InteractWith(whiteSpecies, NewRules(10.0, 500 /*float32(CurrentScreenRadius) / 12*/)) // 288
   //redSpecies.InteractWith2(redSpecies,
   //  TheGlobalRules.SelfAttractionDef,
   //  TheGlobalRules.SelfRadiusDef,
@@ -128,8 +128,8 @@ func MainTwo() {
   //  0 /*TheGlobalRules.SelfSepRadiusDef*/,
   //)
 
-  blueSpecies.InteractWith(redSpecies, NewRules(-10.0, 175.0))
-  blueSpecies.InteractWith(whiteSpecies, NewRules(100.0, 400))
+  blueSpecies.InteractWith(redSpecies, NewRules(-1.0, 175))
+  blueSpecies.InteractWith(whiteSpecies, NewRules(10.0, 400))
   blueSpecies.InteractWith2(blueSpecies,
     TheGlobalRules.SelfAttractionDef,
     TheGlobalRules.SelfRadiusDef,
@@ -141,12 +141,20 @@ func MainTwo() {
   whiteSpecies.InteractWith2(whiteSpecies,
     TheGlobalRules.SelfAttractionDef,
     TheGlobalRules.SelfRadiusDef,
+    TheGlobalRules.SelfSepFactorDef,
+    TheGlobalRules.SelfSepRadiusDef,
+    //0,
+    //0,
+  )
+
+  //robotSpecies.InteractWith(robotSpecies, Ignore)
+  robotSpecies.InteractWith2(robotSpecies,
+    TheGlobalRules.SelfAttractionDef,
+    TheGlobalRules.SelfRadiusDef,
     0 /*TheGlobalRules.SelfSepFactorDef*/,
     0 /*TheGlobalRules.SelfSepRadiusDef*/,
   )
-
-  robotSpecies.InteractWith(robotSpecies, Ignore)
-  robotSpecies.InteractWith(center, NewRules(1.0, CurrentScreenRadius))
+  robotSpecies.InteractWith(center, NewRules(10.0, CurrentScreenRadius))
 
 
   rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")

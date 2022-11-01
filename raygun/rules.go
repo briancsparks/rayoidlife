@@ -25,6 +25,7 @@ type Rules struct {
 type GlobalRules struct {
   GravPerAttr         float32
   MaxVelocity         float32
+  MaxForce            float32
   InitialVelocity     float32
 
   SelfAttractionDef   float32
@@ -44,17 +45,18 @@ type GlobalRules struct {
   QuadTreeCmp         bool
 }
 var TheGlobalRules *GlobalRules = &GlobalRules{
-  GravPerAttr: 1.0 / -500.0,
-  MaxVelocity: 10.0,
+  GravPerAttr: 1.0 / -500,
+  MaxVelocity: 10,
+  MaxForce:    2.5,
   InitialVelocity: -1,
 
-  SelfAttractionDef: 40.0,
+  SelfAttractionDef: 4.0,
   SelfRadiusDef: 180.0,
-  //SelfSepFactorDef: -3,
+  //SelfSepFactorDef: -0.3,
   //SelfSepRadiusDef:  30,
-  //SelfSepFactorDef: -300,           /* TODO: Seems too big */
+  //SelfSepFactorDef: -30.0,           /* TODO: Seems too big */
   //SelfSepRadiusDef:  8,
-  SelfSepFactorDef: -40,
+  SelfSepFactorDef: -4.0,
   SelfSepRadiusDef:  8,
 
   SkipAttractionRule: false,

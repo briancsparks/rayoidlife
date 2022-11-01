@@ -358,6 +358,9 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
   for _, point := range sco.Points {
     thisIsThePoint = false
 
+    velScaleFactor := 1.0
+    _= velScaleFactor
+
     // Give the point a chance to do its own update
     if point.Update(st) {
       continue
@@ -449,7 +452,7 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
                 fxOther += grav /* * rule.Factor*/ * (otherCohortPoint.Mass * dist.X / pairDist)
                 fyOther += grav /* * rule.Factor*/ * (otherCohortPoint.Mass * dist.Y / pairDist)
 
-                scaleFactor := grav * otherCohortPoint.Mass /* * rule.Factor*/
+                scaleFactor := grav * otherCohortPoint.Mass /* * rule.Factor*/ / pairDist
                 fOther = rl.Vector2Scale(dist, scaleFactor)
               }
             }
@@ -466,7 +469,12 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
           //point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx * grav, Y: fy * grav})
         })
 
+        //if fearPoints > 0 {
+        //  velScaleFactor = 0.99
+        //}
+
         // Do attraction rules only if we are not separating
+        //fearPoints = 0
         if fearPoints <= 0 {
           sco.getCohorts(func(rules *Rules, species *Species, otherCohort *SpeciesCohort, otherCohortColor string) {
             stats.Points += len(otherCohort.Points)
@@ -672,10 +680,19 @@ func (sco *SpeciesCohort) Update(st *ComputeStats) {
 
 
     // ---------- Finalize computations ----------
-    point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx, Y: fy})
+    fff := rl.Vector2{
+      X: fx,
+      Y: fy,
+    }
+    clampV2(&fff, TheGlobalRules.MaxForce)
+
+    //point.vel = rl.Vector2Add(point.vel, rl.Vector2{X: fx, Y: fy})
+    point.vel = rl.Vector2Add(point.vel, fff)
 
     // TODO -- this calls sqrt, update stats
     clampV2(&point.vel, TheGlobalRules.MaxVelocity)
+
+    point.vel = rl.Vector2Scale(point.vel, float32(velScaleFactor))
 
     // Update position
     point.pos = rl.Vector2Add(point.pos, point.vel)
