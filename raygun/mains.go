@@ -68,6 +68,44 @@ func MainTwo() {
 
   _ = robotSpecies
 
+  //// ---------- Populations ----------
+  //xdel := rl.Vector2{
+  //  X: 250,
+  //  Y: 0,
+  //}
+  //ydel := rl.Vector2{
+  //  X: 0,
+  //  Y: 250,
+  //}
+  //
+  //curr := CurrentScreenCenter
+  //_,_,_=xdel,ydel,curr
+  //reds := redSpecies.MakePoints(1)
+  //for i, pt := range reds.Points {
+  //  _=i
+  //  pt.pos = curr
+  //  curr = rl.Vector2Add(curr, rl.Vector2Scale(xdel, 2))
+  //  pt.clamp(CurrentScreenWidth, CurrentScreenHeight)
+  //}
+  //
+  ////redSpecies.MakePoints(100)
+  //greens := greenSpecies.MakePoints(1)
+  //
+  //blues := blueSpecies.MakePoints(20)
+  //curr = CurrentScreenCenter
+  //for i, pt := range blues.Points {
+  //  _=i
+  //  pt.pos = curr
+  //  //rl.Vector2Scale(xdel, 2)
+  //  curr = rl.Vector2Add(curr, rl.Vector2Scale(xdel, .25))
+  //  //curr = rl.Vector2Add(curr, xdel)
+  //  pt.clamp(CurrentScreenWidth, CurrentScreenHeight)
+  //}
+  //
+  //whites := whiteSpecies.MakePoints(4)
+  //robots := robotSpecies.MakeBigPoints(10, 10)
+  //_,_,_,_,_ = reds, greens, blues, whites, robots
+
   // ---------- Populations ----------
   reds := redSpecies.MakePoints(100)
   //redSpecies.MakePoints(100)
@@ -81,13 +119,31 @@ func MainTwo() {
 
   // ---------- Interaction Rules ----------
 
-  redSpecies.InteractWith(blueSpecies, NewRules(-300.0, 200.0))
-  redSpecies.InteractWith(whiteSpecies, NewRules(200.0, 288 /*float32(CurrentScreenRadius) / 12*/)) // 288
+  redSpecies.InteractWith(blueSpecies, NewRules(-1000.0, 400.0))
+  redSpecies.InteractWith(whiteSpecies, NewRules(100.0, 500 /*float32(CurrentScreenRadius) / 12*/)) // 288
+  //redSpecies.InteractWith2(redSpecies,
+  //  TheGlobalRules.SelfAttractionDef,
+  //  TheGlobalRules.SelfRadiusDef,
+  //  0 /*TheGlobalRules.SelfSepFactorDef*/,
+  //  0 /*TheGlobalRules.SelfSepRadiusDef*/,
+  //)
 
   blueSpecies.InteractWith(redSpecies, NewRules(-10.0, 175.0))
-  blueSpecies.InteractWith(whiteSpecies, NewRules(40.0, 400))
+  blueSpecies.InteractWith(whiteSpecies, NewRules(100.0, 400))
+  blueSpecies.InteractWith2(blueSpecies,
+    TheGlobalRules.SelfAttractionDef,
+    TheGlobalRules.SelfRadiusDef,
+    TheGlobalRules.SelfSepFactorDef / 2,
+    TheGlobalRules.SelfSepRadiusDef,
+  )
 
-  whiteSpecies.InteractWith(robotSpecies, NewRules(10.0, float32(CurrentScreenRadius) / 12))
+  whiteSpecies.InteractWith(robotSpecies, NewRules(10.0, float32(CurrentScreenRadius) / 4))
+  whiteSpecies.InteractWith2(whiteSpecies,
+    TheGlobalRules.SelfAttractionDef,
+    TheGlobalRules.SelfRadiusDef,
+    0 /*TheGlobalRules.SelfSepFactorDef*/,
+    0 /*TheGlobalRules.SelfSepRadiusDef*/,
+  )
 
   robotSpecies.InteractWith(robotSpecies, Ignore)
   robotSpecies.InteractWith(center, NewRules(1.0, CurrentScreenRadius))
@@ -96,7 +152,7 @@ func MainTwo() {
   rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
-  //rl.SetTargetFPS(60)
+  rl.SetTargetFPS(60)
 
 
   stats := StartComputeStatsAgent()
