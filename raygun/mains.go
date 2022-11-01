@@ -25,12 +25,20 @@ func MainOne() {
 
 // -------------------------------------------------------------------------------------------------------------------
 
+// 4K
 const res4kW = float32(3840)
 const res4kH = float32(2160)
 
+// MacBook 14: 3024 × 1964
+const macBookW = float32(3024)
+const macBookH = float32(1964)
+
+
 var (
-  InitialScreenWidth  float32 = 0.90 * res4kW
-  InitialScreenHeight float32 = 0.90 * res4kH
+  //InitialScreenWidth  float32 = 0.90 * res4kW
+  //InitialScreenHeight float32 = 0.90 * res4kH
+  InitialScreenWidth  float32 = 0.90 * macBookW
+  InitialScreenHeight float32 = 0.90 * macBookH
   CurrentScreenWidth  float32
   CurrentScreenHeight float32
   CurrentScreenRadius float32
@@ -49,6 +57,8 @@ func MainTwo() {
   CurrentScreenCenter = rl.Vector2{X: CurrentScreenMidX, Y: CurrentScreenMidY}
 
   CurrentScreenRadius = maxFloat32(CurrentScreenWidth, CurrentScreenHeight)
+
+  _,_=screenWidth, screenHeight
 
   // ---------- SpeciesCohort ----------
 
@@ -157,7 +167,13 @@ func MainTwo() {
   robotSpecies.InteractWith(center, NewRules(10.0, CurrentScreenRadius))
 
 
+  mcount := rl.GetMonitorCount()
+  mname := rl.GetMonitorName(0)
+  mWidth, mHeight := rl.GetMonitorWidth(0), rl.GetMonitorHeight(0)
+  _,_,_,_= mWidth, mHeight,mcount,mname
+
   rl.InitWindow(int32(screenWidth), int32(screenHeight), "Two, what did you expect?")
+  //rl.InitWindow(int32(mWidth), int32(mHeight), "Two, what did you expect?")
 
   //camera := rl.Camera2D{}
   rl.SetTargetFPS(60)
